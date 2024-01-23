@@ -9,9 +9,7 @@ class KeyboardPlayerInput(IPlayerInput) :
 
     def get_movement(self):
         keys = pygame.key.get_pressed()
-        if keys[self.up_key]:
-            return 1
-        elif keys[self.down_key]:
-            return -1
-        else:
-            return 0
+        movement = 0
+        if keys[self.up_key]: movement += 1
+        if keys[self.down_key]: movement -= 1
+        return movement
