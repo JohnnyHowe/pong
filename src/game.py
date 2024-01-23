@@ -1,42 +1,42 @@
-import math
 import pygame
-from .window import Window
+
+from .keyboard_player_input import KeyboardPlayerInput
+from .clock import clock
+from .window import window
+from .player import Player
 
 class Game:
 
-    def __init__(self):
-        clock = pygame.time.Clock()
-        time_running_ms = 0
+    player1 = None
+    player2 = None
 
+    def __init__(self):
+        self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
+        self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+
+    def run(self):
         running = True
+
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.VIDEORESIZE:
-                    Window.set_size((event.w, event.h))
-            time_running_ms += clock.tick()
+                    window.set_size((event.w, event.h))
+            
+            clock.tick()
 
-            Window._screen.fill((255, 255, 255))
-            Window.draw_screen_gizmos()
-            Window.fill_undefined_area((100, 100, 100))
+            window._screen.fill((0, 0, 0))
+            window.draw_screen_gizmos()
+            window.fill_undefined_area((100, 100, 100))
 
-            width = 200 + 25 * math.sin(time_running_ms / 150)
-            height = 100 + 25 * math.sin(time_running_ms / 300)
-            pygame.draw.rect(Window._screen, (255, 0, 0), pygame.Rect(-width/2 + 400, -height/2 + 300, width, height))
+            self.player1.update()
+            self.player2.update()
 
-            width = 2.0 + .5 * math.sin(time_running_ms / 150)
-            height = 1.0 + .25 * math.sin(time_running_ms / 300)
-            Window.draw_rect((
-                -3 - width / 2,
-                -2 + height / 2, 
-                width, 
-                height), 
-                (0, 0, 255))
+            self.player1.draw()
+            self.player2.draw()
 
             pygame.display.update()
 
         pygame.quit()
 
-    def run(self):
-        pass

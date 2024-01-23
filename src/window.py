@@ -19,7 +19,7 @@ class _Window:
         self.draw_grid()
         self.draw_origin_gizmo()
 
-    def draw_grid(self, color = (0, 0, 0), line_width=0.01):
+    def draw_grid(self, color = (50, 50, 50), line_width=0.01):
         game_display_rect = self.get_game_display_rect()
 
         x_start = game_display_rect.left - 1
@@ -40,7 +40,7 @@ class _Window:
     def draw_origin_gizmo(self):
         self.draw_line((0, 0), (1, 0), (0, 150, 0))
         self.draw_line((0, 0), (0, 1), (0, 0, 150))
-        self.draw_circle((0, 0), .1, (0, 0, 0))
+        self.draw_circle((0, 0), .1, (200, 200, 200))
 
     def fill_undefined_area(self, color=(255, 255, 255)):
         game_display_rect = self._get_game_display_screen_rect()
@@ -118,4 +118,4 @@ class _Window:
 
 
 # This is a singleton class, so we only need one instance of it.
-Window = _Window()
+window = _Window()
