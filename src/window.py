@@ -21,12 +21,21 @@ class _Window:
 
     def draw_grid(self, color = (0, 0, 0), line_width=0.01):
         game_display_rect = self.get_game_display_rect()
-        for i in range(0, self.game_size[0] + 1):
-            x = game_display_rect.left + i * game_display_rect.width / self.game_size[0]
-            self.draw_line((x, game_display_rect.top), (x, game_display_rect.bottom), color, line_width)
-        for i in range(0, self.game_size[1] + 1):
-            y = game_display_rect.top + i * game_display_rect.height / self.game_size[1]
-            self.draw_line((game_display_rect.left, y), (game_display_rect.right, y), color, line_width)
+
+        x_start = game_display_rect.left - 1
+        x_end = game_display_rect.right + 1
+        x_line_count = self.game_size[0] + 2
+
+        y_start = game_display_rect.top - 1
+        y_end = game_display_rect.bottom + 1
+        y_line_count = self.game_size[1] + 2
+
+        for i in range(x_line_count):
+            x = x_start + i
+            self.draw_line((x, y_start), (x, y_end), color, line_width)
+        for i in range(y_line_count):
+            y = y_start + i
+            self.draw_line((x_start, y), (x_end, y), color, line_width)
 
     def draw_origin_gizmo(self):
         self.draw_line((0, 0), (1, 0), (0, 150, 0))

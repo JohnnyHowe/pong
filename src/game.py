@@ -18,7 +18,7 @@ class Game:
             time_running_ms += clock.tick()
 
             Window._screen.fill((255, 255, 255))
-            # Window.draw_screen_gizmos()
+            Window.draw_screen_gizmos()
             Window.fill_undefined_area((100, 100, 100))
 
             width = 200 + 25 * math.sin(time_running_ms / 150)
