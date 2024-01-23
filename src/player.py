@@ -3,7 +3,7 @@ from .clock import clock
 
 class Player:
 
-    speed = 2
+    speed = 6
 
     def __init__(self, player_input, position=(-6, 0), size=(0.5, 2)):
         self.position = position
@@ -12,9 +12,11 @@ class Player:
 
     def update(self):
         movement = self.player_input.get_movement()
+        y_max = (window.get_game_display_rect()[3] - self.size[1]) / 2
+
         self.position = (
             self.position[0],
-            self.position[1] + movement * self.speed * clock.dt_seconds
+            min(max(-y_max, self.position[1] + movement * self.speed * clock.dt_seconds), y_max)
         )
 
     def draw(self):
