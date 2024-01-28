@@ -1,3 +1,4 @@
+import math
 import pygame
 
 from .keyboard_player_input import KeyboardPlayerInput
@@ -26,7 +27,11 @@ class Game:
             
             clock.tick()
 
-            window._screen.fill((0, 0, 0))
+            window.camera_rotation_rads = 0
+            window.camera_rotation_rads += self.player1.player_input.get_movement() * math.radians(5)
+            window.camera_rotation_rads -= self.player2.player_input.get_movement() * math.radians(5)
+
+            window._draw_buffer.fill((0, 0, 0))
             window.draw_screen_gizmos()
             window.fill_undefined_area((100, 100, 100))
 
@@ -36,7 +41,7 @@ class Game:
             self.player1.draw()
             self.player2.draw()
 
-            pygame.display.update()
+            window.update()
 
         pygame.quit()
 

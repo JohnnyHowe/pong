@@ -12,7 +12,7 @@ class Player:
 
     def update(self):
         movement = self.player_input.get_movement()
-        y_max = (window.get_game_display_rect()[3] - self.size[1]) / 2
+        y_max = (window.get_game_display_rect_no_rotation()[3] - self.size[1]) / 2
 
         self.position = (
             self.position[0],

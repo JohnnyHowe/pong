@@ -1,3 +1,4 @@
+import math
 import pygame
 
 
@@ -5,7 +6,9 @@ class _Window:
 
     game_size = (16, 9)
     window_size = [1280, 720]
+    _draw_buffer = None
     _screen = None
+    camera_rotation_rads = 0 # radians anticlockwise -> for screen to rotate clockwise this must be positive
 
     def __init__(self):
         pygame.display.set_caption("Not Pong")
@@ -14,13 +17,21 @@ class _Window:
     def set_size(self, size):
         self.window_size = size
         self._screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+        self._draw_buffer = pygame.Surface(self.window_size)
+
+    def update(self):
+        rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
+        rotated_draw_buffer_center = rotated_draw_buffer.get_rect().center
+        screen_center = (self.window_size[0] / 2, self.window_size[1] / 2)
+        self._screen.blit(rotated_draw_buffer, (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1]))
+        pygame.display.update()
 
     def draw_screen_gizmos(self):
         self.draw_grid()
         self.draw_origin_gizmo()
 
     def draw_grid(self, color = (50, 50, 50), line_width=0.01):
-        game_display_rect = self.get_game_display_rect()
+        game_display_rect = self.get_game_display_rect_no_rotation()
 
         x_start = game_display_rect.left - 1
         x_end = game_display_rect.right + 1
@@ -57,20 +68,20 @@ class _Window:
         self.draw_screen_circle(self.get_screen_position(world_position), radius * self._get_game_display_scale(), color)
 
     def draw_screen_circle(self, screen_position, radius, color):
-        pygame.draw.circle(self._screen, color, screen_position, radius)
+        pygame.draw.circle(self._draw_buffer, color, screen_position, radius)
 
     def draw_rect(self, world_rect, color):
         self.draw_screen_rect(self.get_screen_rect(world_rect), color)
 
     def draw_screen_rect(self, screen_rect, color):
-        pygame.draw.rect(self._screen, color, screen_rect)
+        pygame.draw.rect(self._draw_buffer, color, screen_rect)
 
     def draw_line(self, start, end, color, width=0.1):
         self.draw_screen_line(self.get_screen_position(start), self.get_screen_position(end), color, width * self._get_game_display_scale())
 
     def draw_screen_line(self, start, end, color, width=1):
         if width == 0: return 
-        pygame.draw.line(self._screen, color, start, end, max(1, int(width)))
+        pygame.draw.line(self._draw_buffer, color, start, end, max(1, int(width)))
 
     # =============================================================================================
     # Position conversion methods and helpers
@@ -89,10 +100,19 @@ class _Window:
     def get_screen_position(self, world_position):
         """ Get the world position converted in to screen coordinates.
         Takes into account everything: scale, viewport offset ..."""
-        centered_world_position = (world_position[0] + self.game_size[0] / 2, self.game_size[1] / 2 -  world_position[1])
+        world_position = (world_position[0] + self.game_size[0] / 2, self.game_size[1] / 2 -  world_position[1])
+        world_position = self._rotate_point_around_origin(world_position, (self.game_size[0] / 2, self.game_size[1] / 2), self.camera_rotation_rads)
+
         game_display_offset = self._get_game_display_offset()
         game_display_scale = self._get_game_display_scale()
-        return centered_world_position[0] * game_display_scale + game_display_offset[0], centered_world_position[1] * game_display_scale + game_display_offset[1]
+        return world_position[0] * game_display_scale + game_display_offset[0], world_position[1] * game_display_scale + game_display_offset[1]
+
+    def _rotate_point_around_origin(self, point, origin, angle):
+        """ Rotate a point around a given origin by a given angle. """
+        return point
+        x = math.cos(angle) * (point[0] - origin[0]) - math.sin(angle) * (point[1] - origin[1]) + origin[0]
+        y = math.sin(angle) * (point[0] - origin[0]) + math.cos(angle) * (point[1] - origin[1]) + origin[1]
+        return (x, y)
 
     def _get_game_display_screen_rect(self):
         """ Get the rectangle area and position of the screen that the game is displayed on."""
@@ -112,7 +132,7 @@ class _Window:
         """ Get the scale of the game display in pixels per game unit. """
         return min(self.window_size[0] / self.game_size[0], self.window_size[1] / self.game_size[1])
 
-    def get_game_display_rect(self):
+    def get_game_display_rect_no_rotation(self):
         """ Get the area and position of the game world that is displayed on the screen. """
         return pygame.Rect(-self.game_size[0] / 2, -self.game_size[1] / 2, self.game_size[0], self.game_size[1])
 
