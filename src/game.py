@@ -17,6 +17,7 @@ class Game:
 
     def run(self):
         running = True
+        target_camera_rotation_rads = 0
 
         while running:
             for event in pygame.event.get():
@@ -27,13 +28,19 @@ class Game:
             
             clock.tick()
 
-            window.camera_rotation_rads = 0
-            window.camera_rotation_rads += self.player1.player_input.get_movement() * math.radians(5)
-            window.camera_rotation_rads -= self.player2.player_input.get_movement() * math.radians(5)
+            target_camera_rotation_rads = 0
+            target_camera_rotation_rads += self.player1.player_input.get_movement() * math.radians(3)
+            target_camera_rotation_rads -= self.player2.player_input.get_movement() * math.radians(3)
+            window.camera_rotation_rads = self.lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * 8)
+
+            movement = self.player1.player_input.get_movement() + self.player2.player_input.get_movement()
+            target_camera_vertical_position = 0
+            if abs(movement) == 2: target_camera_vertical_position = (movement / 2) * 0.5
+            window.camera_position = (0, self.lerp(window.camera_position[1], target_camera_vertical_position, clock.dt_seconds * 4))
 
             window._draw_buffer.fill((0, 0, 0))
-            window.draw_screen_gizmos()
             window.fill_undefined_area((100, 100, 100))
+            window.draw_screen_gizmos()
 
             self.player1.update()
             self.player2.update()
@@ -44,4 +51,7 @@ class Game:
             window.update()
 
         pygame.quit()
+
+    def lerp(self, a, b, t):
+        return a + (b - a) * t
 

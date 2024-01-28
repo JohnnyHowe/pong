@@ -9,6 +9,7 @@ class _Window:
     _draw_buffer = None
     _screen = None
     camera_rotation_rads = 0 # radians anticlockwise -> for screen to rotate clockwise this must be positive
+    camera_position = (0, 0)
 
     def __init__(self):
         pygame.display.set_caption("Not Pong")
@@ -23,7 +24,13 @@ class _Window:
         rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
         rotated_draw_buffer_center = rotated_draw_buffer.get_rect().center
         screen_center = (self.window_size[0] / 2, self.window_size[1] / 2)
-        self._screen.blit(rotated_draw_buffer, (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1]))
+        rotated_buffer_draw_position = (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1])
+
+        game_display_scale = self._get_game_display_scale()
+        camera_screen_position = (self.camera_position[0] * game_display_scale, self.camera_position[1] * game_display_scale)
+        draw_position = (rotated_buffer_draw_position[0] + camera_screen_position[0], rotated_buffer_draw_position[1] + camera_screen_position[1])
+
+        self._screen.blit(rotated_draw_buffer, draw_position)
         pygame.display.update()
 
     def draw_screen_gizmos(self):
@@ -92,6 +99,7 @@ class _Window:
         Takes into account everything: scale, viewport offset ..."""
         game_display_offset = self._get_game_display_offset()
         game_display_scale = self._get_game_display_scale()
+
         return pygame.Rect((world_rect[0] + self.game_size[0] / 2) * game_display_scale + game_display_offset[0],
                            (self.game_size[1] / 2 - world_rect[1]) * game_display_scale + game_display_offset[1],
                            world_rect[2] * game_display_scale,
@@ -100,19 +108,11 @@ class _Window:
     def get_screen_position(self, world_position):
         """ Get the world position converted in to screen coordinates.
         Takes into account everything: scale, viewport offset ..."""
+        world_position = (world_position[0], world_position[1])
         world_position = (world_position[0] + self.game_size[0] / 2, self.game_size[1] / 2 -  world_position[1])
-        world_position = self._rotate_point_around_origin(world_position, (self.game_size[0] / 2, self.game_size[1] / 2), self.camera_rotation_rads)
-
         game_display_offset = self._get_game_display_offset()
         game_display_scale = self._get_game_display_scale()
         return world_position[0] * game_display_scale + game_display_offset[0], world_position[1] * game_display_scale + game_display_offset[1]
-
-    def _rotate_point_around_origin(self, point, origin, angle):
-        """ Rotate a point around a given origin by a given angle. """
-        return point
-        x = math.cos(angle) * (point[0] - origin[0]) - math.sin(angle) * (point[1] - origin[1]) + origin[0]
-        y = math.sin(angle) * (point[0] - origin[0]) + math.cos(angle) * (point[1] - origin[1]) + origin[1]
-        return (x, y)
 
     def _get_game_display_screen_rect(self):
         """ Get the rectangle area and position of the screen that the game is displayed on."""
