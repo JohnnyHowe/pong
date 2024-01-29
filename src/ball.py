@@ -59,3 +59,7 @@ class Ball:
     
     def get_rect(self):
         return (self.position[0] - self.size / 2, self.position[1] + self.size / 2, self.size, self.size)
+
+    def is_off_screen_horizontal(self):
+        max_x = window.game_size[0] / 2
+        return abs(self.position[0]) > max_x 

@@ -18,6 +18,9 @@ class Game:
     def __init__(self):
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+        self.reset_ball()
+
+    def reset_ball(self):
         self.ball = Ball()
 
     def run(self):
@@ -51,6 +54,9 @@ class Game:
         self.ball.show()
 
         window.update()
+
+        if (self.ball.is_off_screen_horizontal()):
+            self.reset_ball()
 
     def get_player_rotation_effect(self, player):
         effect = player.player_input.get_movement()
