@@ -1,6 +1,7 @@
 import pygame
 from .window import window
 from .clock import clock
+from .user_config import user_config
 
 class Ball:
     size = 0.4
@@ -10,39 +11,44 @@ class Ball:
         self.velocity = [4, 4]
 
     def update(self, paddle_rects):
-        if (pygame.key.get_pressed()[pygame.K_r]):
-            self.position = [0, 0]
-
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
         self.process_collisions(paddle_rects)
         self.process_game_border_collisions()
 
-    def process_collisions(self, paddle_rects):
-        for paddle_rect in paddle_rects:
-            self.process_collision(paddle_rect)
+    def process_collisions(self, paddles):
+        for paddle in paddles:
+            self.process_collision(paddle)
 
-    def process_collision(self, paddle_rect):
+    def process_collision(self, paddle):
         """ Process the potential collision with paddle_rect 
         Is a basic 2d, axis aligned collision detection and resolution """
+        paddle_rect = paddle.get_rect()
         if not self.is_colliding(paddle_rect): return
 
         # collision resolution
         overlap_rect = self.get_overlap_rect(paddle_rect)
         if (overlap_rect[2] < overlap_rect[3]):
+            # horizontal overlap resolution
             is_left_of_paddle = self.position[0] < paddle_rect[0] + paddle_rect[2] / 2
             self.position[0] -= overlap_rect[2] * (1 if is_left_of_paddle else -1)
-            self.velocity[0] *= -1
+            self.velocity[0] = abs(self.velocity[0]) * (-1 if is_left_of_paddle else 1)
+            # vertical velocity adjustment from paddle velocity
+            self.velocity[1] += paddle.velocity[1] * user_config.get("game_paddle_speed_effect_on_ball")
+            print("collide!", self.velocity, paddle.velocity)
         else:
+            # vertical overlap resolution
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
             self.position[1] += overlap_rect[3] * (1 if is_above_paddle else -1)
-            self.velocity[1] *= -1
+            self.velocity[1] = abs(self.velocity[1]) * (1 if is_above_paddle else -1)
 
     def process_game_border_collisions(self):
         if (self.position[1] + self.size / 2 > window.game_size[1] / 2):
+            # horizontal overlap resolution
             self.position[1] = window.game_size[1] / 2 - self.size / 2
             self.velocity[1] *= -1
         elif (self.position[1] - self.size / 2 < -window.game_size[1] / 2):
+            # vertical overlap resolution
             self.position[1] = -window.game_size[1] / 2 + self.size / 2
             self.velocity[1] *= -1
 
