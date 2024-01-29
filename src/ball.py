@@ -7,7 +7,7 @@ class Ball:
 
     def __init__(self):
         self.position = [0, 0]
-        self.velocity = [4, 0]
+        self.velocity = [4, 7]
 
     def update(self, paddle_rects):
         if (pygame.key.get_pressed()[pygame.K_r]):
@@ -16,6 +16,7 @@ class Ball:
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
         self.process_collisions(paddle_rects)
+        self.process_game_border_collisions()
 
     def process_collisions(self, paddle_rects):
         for paddle_rect in paddle_rects:
@@ -35,6 +36,14 @@ class Ball:
         else:
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
             self.position[1] += overlap_rect[3] * (1 if is_above_paddle else -1)
+            self.velocity[1] *= -1
+
+    def process_game_border_collisions(self):
+        if (self.position[1] + self.size / 2 > window.game_size[1] / 2):
+            self.position[1] = window.game_size[1] / 2 - self.size / 2
+            self.velocity[1] *= -1
+        elif (self.position[1] - self.size / 2 < -window.game_size[1] / 2):
+            self.position[1] = -window.game_size[1] / 2 + self.size / 2
             self.velocity[1] *= -1
 
     def get_overlap_rect(self, paddle_rect):
