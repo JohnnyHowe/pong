@@ -22,7 +22,15 @@ class Ball:
         self.process_collisions(paddle_rects)
         self.process_game_border_collisions()
 
+        self.clamp_velocity_proportion()
         self.set_speed()
+
+    def clamp_velocity_proportion(self):
+        """ Stop the vertical speed/ horizontal speed proportion getting out of hand. """
+        current_proportion_signed = self.velocity[1] / abs(self.velocity[0])
+        max_proportion_unsigned = GAME_MAX_BALL_VERTICAL_SPEED_PROPORTION
+        if abs(current_proportion_signed) <= max_proportion_unsigned: return
+        self.velocity[1] = abs(self.velocity[0]) * max_proportion_unsigned * (-1 if current_proportion_signed < 0 else 1)
 
     def set_speed(self):
         too_fast_multiplier = self.get_target_speed() / self._get_speed()
