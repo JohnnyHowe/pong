@@ -21,18 +21,15 @@ class Player:
         )
 
     def draw(self):
-        window.draw_rect((
-            self.position[0] - self.size[0] / 2,
-            self.position[1] + self.size[1] / 2, 
-            self.size[0], 
-            self.size[1]), 
-            (255, 255, 255))
+        window.draw_rect(self.get_rect(), (255, 255, 255))
         
     def get_vertical_position_normalized(self):
         """ Normalized between -1 and 1 """
         y_max = (window.get_game_display_rect_no_rotation()[3] - self.size[1]) / 2
         return self.position[1] / y_max
 
-
     def get_desired_movement(self):
         return self.player_input.get_movement()
+
+    def get_rect(self):
+        return (self.position[0] - self.size[0] / 2, self.position[1] + self.size[1] / 2, self.size[0], self.size[1])

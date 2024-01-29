@@ -7,15 +7,18 @@ from .keyboard_player_input import KeyboardPlayerInput
 from .clock import clock
 from .window import window
 from .player import Player
+from .ball import Ball
 
 class Game:
 
     player1 = None
     player2 = None
+    ball = None
 
     def __init__(self):
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+        self.ball = Ball()
 
     def run(self):
         while True:
@@ -44,6 +47,9 @@ class Game:
 
         self.player1.draw()
         self.player2.draw()
+        self.ball.show()
+
+        self.ball.update([self.player1.get_rect(), self.player2.get_rect()])
 
         window.update()
 
