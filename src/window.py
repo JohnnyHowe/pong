@@ -10,6 +10,7 @@ class _Window:
     _screen = None
     camera_rotation_rads = 0 # radians anticlockwise -> for screen to rotate clockwise this must be positive
     camera_position = (0, 0)
+    game_display_scale = 0.9
 
     def __init__(self):
         pygame.display.set_caption("Not Pong")
@@ -118,7 +119,7 @@ class _Window:
     
     def _get_game_display_scale(self):
         """ Get the scale of the game display in pixels per game unit. """
-        return min(self.window_size[0] / self.game_size[0], self.window_size[1] / self.game_size[1])
+        return min(self.window_size[0] * self.game_display_scale / self.game_size[0], self.window_size[1] * self.game_display_scale / self.game_size[1])
 
     def get_game_display_rect_no_rotation(self):
         """ Get the area and position of the game world that is displayed on the screen. """
