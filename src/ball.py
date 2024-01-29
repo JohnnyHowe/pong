@@ -1,7 +1,7 @@
 import math
 from .window import window
 from .clock import clock
-from .user_config import user_config
+from .game_configuration import * 
 
 class Ball:
 
@@ -53,7 +53,7 @@ class Ball:
             self.position[0] -= overlap_rect[2] * (1 if is_left_of_paddle else -1)
             self.velocity[0] = abs(self.velocity[0]) * (-1 if is_left_of_paddle else 1)
             # vertical velocity adjustment from paddle velocity
-            self.velocity[1] += paddle.velocity[1] * user_config.get("game_paddle_speed_effect_on_ball")
+            self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL 
         else:
             # vertical overlap resolution
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
