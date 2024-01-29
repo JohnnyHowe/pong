@@ -10,6 +10,8 @@ from .ball import Ball
 from .easings import *
 
 class Game:
+    # Lots of ugly code in this class
+    # Please forgive me
 
     player1 = None
     player2 = None
@@ -85,7 +87,7 @@ class Game:
                 window.set_size((event.w, event.h))
 
     def ball_collision_delegate(self, other, resolution_direction):
-        print("ball collision with", other, resolution_direction)
+        # Ugly code. I'm sorry LSP
 
         # collided with horizontal wall
         if other is None:
