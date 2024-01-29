@@ -25,13 +25,13 @@ class Game:
     def step(self):
         self.run_event_loop()
 
-        target_camera_rotation_rads = 0
         rotation_effect = math.radians(user_config.get("juice_screen_movement_from_paddle_max_rotation_degrees") / 2)
-        target_camera_rotation_rads += self.get_player_rotation_effect(self.player1) * rotation_effect
-        target_camera_rotation_rads -= self.get_player_rotation_effect(self.player2) * rotation_effect
+        p1_effect = self.get_player_rotation_effect(self.player1)
+        p2_effect = self.get_player_rotation_effect(self.player2)
+        target_camera_rotation_rads = (p1_effect - p2_effect) * rotation_effect
         window.camera_rotation_rads = self.lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed"))
 
-        movement = self.player1.player_input.get_movement() + self.player2.player_input.get_movement()
+        movement =p1_effect + p2_effect 
         target_camera_vertical_position = 0
         if abs(movement) == 2: target_camera_vertical_position = (movement / 2) * user_config.get("juice_screen_movement_from_paddle_max_vertical")
         window.camera_position = (0, self.lerp(window.camera_position[1], target_camera_vertical_position, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed")))
@@ -50,7 +50,6 @@ class Game:
 
     def get_player_rotation_effect(self, player):
         effect = player.player_input.get_movement()
-        print(str(player.get_desired_movement()) + " " + str(player.get_vertical_position_normalized()))
         if (player.get_desired_movement() > 0 and player.get_vertical_position_normalized() == 1 or 
             player.get_desired_movement() < 0 and player.get_vertical_position_normalized() == -1):
             effect = -effect
