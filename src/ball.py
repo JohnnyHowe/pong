@@ -1,20 +1,39 @@
-import pygame
+import math
 from .window import window
 from .clock import clock
 from .user_config import user_config
 
 class Ball:
-    size = 0.4
 
     def __init__(self):
         self.position = [0, 0]
         self.velocity = [4, 4]
+        self.size = 0.4
+        self.base_speed = 4
+        self.speed_increase_rate = 0.5
+        self.time_alive = 0
 
     def update(self, paddle_rects):
+        self.time_alive += clock.dt_seconds
+
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
+
         self.process_collisions(paddle_rects)
         self.process_game_border_collisions()
+
+        self.set_speed()
+
+    def set_speed(self):
+        too_fast_multiplier = self.get_target_speed() / self._get_speed()
+        self.velocity[0] *= too_fast_multiplier
+        self.velocity[1] *= too_fast_multiplier
+
+    def get_target_speed(self):
+        return self.base_speed + self.speed_increase_rate * self.time_alive 
+
+    def _get_speed(self):
+        return math.sqrt(self.velocity[0] ** 2 + self.velocity[1] ** 2)
 
     def process_collisions(self, paddles):
         for paddle in paddles:
@@ -35,7 +54,6 @@ class Ball:
             self.velocity[0] = abs(self.velocity[0]) * (-1 if is_left_of_paddle else 1)
             # vertical velocity adjustment from paddle velocity
             self.velocity[1] += paddle.velocity[1] * user_config.get("game_paddle_speed_effect_on_ball")
-            print("collide!", self.velocity, paddle.velocity)
         else:
             # vertical overlap resolution
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
