@@ -18,7 +18,9 @@ class _Window:
     def set_size(self, size):
         self.window_size = size
         self._screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
-        self._draw_buffer = pygame.Surface(self.window_size)
+
+        scale = self._get_game_display_scale()
+        self._draw_buffer = pygame.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
 
     def update(self):
         rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
@@ -61,11 +63,7 @@ class _Window:
         self.draw_circle((0, 0), .1, (200, 200, 200))
 
     def fill_undefined_area(self, color=(255, 255, 255)):
-        game_display_rect = self._get_game_display_screen_rect()
-        self.draw_screen_rect((0, 0, game_display_rect.left, self.window_size[1]), color)
-        self.draw_screen_rect((game_display_rect.right, 0, self.window_size[0] - game_display_rect.right, self.window_size[1]), color)
-        self.draw_screen_rect((0, 0, self.window_size[0], game_display_rect.top), color)
-        self.draw_screen_rect((0, game_display_rect.bottom, self.window_size[0], self.window_size[1] - game_display_rect.bottom), color)
+        self._screen.fill(color)
 
     # =============================================================================================
     # Client draw methods
@@ -97,11 +95,9 @@ class _Window:
     def get_screen_rect(self, world_rect):
         """ Get the world rectangle converted in to screen coordinates.
         Takes into account everything: scale, viewport offset ..."""
-        game_display_offset = self._get_game_display_offset()
         game_display_scale = self._get_game_display_scale()
-
-        return pygame.Rect((world_rect[0] + self.game_size[0] / 2) * game_display_scale + game_display_offset[0],
-                           (self.game_size[1] / 2 - world_rect[1]) * game_display_scale + game_display_offset[1],
+        return pygame.Rect((world_rect[0] + self.game_size[0] / 2) * game_display_scale,
+                           (self.game_size[1] / 2 - world_rect[1]) * game_display_scale,
                            world_rect[2] * game_display_scale,
                            world_rect[3] * game_display_scale)
 
@@ -110,9 +106,8 @@ class _Window:
         Takes into account everything: scale, viewport offset ..."""
         world_position = (world_position[0], world_position[1])
         world_position = (world_position[0] + self.game_size[0] / 2, self.game_size[1] / 2 -  world_position[1])
-        game_display_offset = self._get_game_display_offset()
         game_display_scale = self._get_game_display_scale()
-        return world_position[0] * game_display_scale + game_display_offset[0], world_position[1] * game_display_scale + game_display_offset[1]
+        return world_position[0] * game_display_scale, world_position[1] * game_display_scale
 
     def _get_game_display_screen_rect(self):
         """ Get the rectangle area and position of the screen that the game is displayed on."""
@@ -120,13 +115,6 @@ class _Window:
         game_display_scale = self._get_game_display_scale()
         game_display_size = (self.game_size[0] * game_display_scale, self.game_size[1] * game_display_scale)
         return pygame.Rect(game_display_offset[0], game_display_offset[1], game_display_size[0], game_display_size[1])
-
-    def _get_game_display_offset(self):
-        """ Get the pixel distance from the top left corner of the window to the top left corner of the game display."""
-        game_display_scale = self._get_game_display_scale()
-        game_display_size = (self.game_size[0] * game_display_scale, self.game_size[1] * game_display_scale)
-        game_display_offset = ((self.window_size[0] - game_display_size[0]) / 2, (self.window_size[1] - game_display_size[1]) / 2)
-        return game_display_offset
     
     def _get_game_display_scale(self):
         """ Get the scale of the game display in pixels per game unit. """

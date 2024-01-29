@@ -31,14 +31,13 @@ class Game:
         target_camera_rotation_rads = (p1_effect - p2_effect) * rotation_effect
         window.camera_rotation_rads = self.lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed"))
 
-        movement =p1_effect + p2_effect 
+        movement = p1_effect + p2_effect 
         target_camera_vertical_position = 0
         if abs(movement) == 2: target_camera_vertical_position = (movement / 2) * user_config.get("juice_screen_movement_from_paddle_max_vertical")
         window.camera_position = (0, self.lerp(window.camera_position[1], target_camera_vertical_position, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed")))
 
         window._draw_buffer.fill((0, 0, 0))
-        window.fill_undefined_area((100, 100, 100))
-        window.draw_screen_gizmos()
+        window.fill_undefined_area((150, 150, 150))
 
         self.player1.update()
         self.player2.update()
