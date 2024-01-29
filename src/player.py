@@ -1,5 +1,7 @@
 from .window import window
 from .clock import clock
+from .game_configuration import *
+from .easings import *
 
 class Player:
 
@@ -10,8 +12,13 @@ class Player:
         self.velocity = [0, 0]
         self.last_movement = 0
         self.speed = 5
+        self.target_knock_back = 0;
+        self.smoothed_knock_back = 0;
 
     def update(self):
+        self.target_knock_back = lerp(self.target_knock_back, 0, clock.dt_seconds * JUICE_PADDLE_KNOCKBACK_RETURN_LERP_SPEED)
+        self.smoothed_knock_back = lerp(self.smoothed_knock_back, self.target_knock_back, clock.dt_seconds * JUICE_PADDLE_KNOCKBACK_RETURN_LERP_SPEED)
+
         movement = self.get_desired_movement()
         self.velocity[1] = movement * self.speed 
 
@@ -46,4 +53,8 @@ class Player:
         return self.player_input.get_movement()
 
     def get_rect(self):
-        return (self.position[0] - self.size[0] / 2, self.position[1] + self.size[1] / 2, self.size[0], self.size[1])
+        return (self.position[0] - self.size[0] / 2 + self.smoothed_knock_back, self.position[1] + self.size[1] / 2, self.size[0], self.size[1])
+    
+    def knock_back(self, knock_back):
+        self.target_knock_back = knock_back
+        print("knock back", knock_back)

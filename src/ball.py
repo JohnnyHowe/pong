@@ -12,6 +12,7 @@ class Ball:
         self.base_speed = 4
         self.speed_increase_rate = 0.5
         self.time_alive = 0
+        self.on_collision_delegate = None   # (self, other, resolution_direction)
 
     def update(self, paddle_rects):
         self.time_alive += clock.dt_seconds
@@ -19,7 +20,7 @@ class Ball:
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
 
-        self.process_collisions(paddle_rects)
+        self.process_paddle_collisions(paddle_rects)
         self.process_game_border_collisions()
 
         self.clamp_velocity_proportion()
@@ -43,11 +44,11 @@ class Ball:
     def _get_speed(self):
         return math.sqrt(self.velocity[0] ** 2 + self.velocity[1] ** 2)
 
-    def process_collisions(self, paddles):
+    def process_paddle_collisions(self, paddles):
         for paddle in paddles:
-            self.process_collision(paddle)
+            self.process_paddle_collision(paddle)
 
-    def process_collision(self, paddle):
+    def process_paddle_collision(self, paddle):
         """ Process the potential collision with paddle_rect 
         Is a basic 2d, axis aligned collision detection and resolution """
         paddle_rect = paddle.get_rect()
@@ -55,28 +56,38 @@ class Ball:
 
         # collision resolution
         overlap_rect = self.get_overlap_rect(paddle_rect)
+        resolution_direction = (0, 0)
         if (overlap_rect[2] < overlap_rect[3]):
             # horizontal overlap resolution
             is_left_of_paddle = self.position[0] < paddle_rect[0] + paddle_rect[2] / 2
-            self.position[0] -= overlap_rect[2] * (1 if is_left_of_paddle else -1)
-            self.velocity[0] = abs(self.velocity[0]) * (-1 if is_left_of_paddle else 1)
-            # vertical velocity adjustment from paddle velocity
+            resolution_direction = (-1 if is_left_of_paddle else 1, 0)
+            self.position[0] += overlap_rect[2] * resolution_direction[0] 
+            self.velocity[0] = abs(self.velocity[0]) * resolution_direction[0]
             self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL 
         else:
             # vertical overlap resolution
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
-            self.position[1] += overlap_rect[3] * (1 if is_above_paddle else -1)
-            self.velocity[1] = abs(self.velocity[1]) * (1 if is_above_paddle else -1)
+            resolution_direction = (0, -1 if is_above_paddle else 1)
+            self.position[1] -= overlap_rect[3] * resolution_direction[1] 
+            self.velocity[1] = -abs(self.velocity[1]) * resolution_direction[1] 
+
+        self.invoke_collision_delegate(paddle, resolution_direction)
 
     def process_game_border_collisions(self):
         if (self.position[1] + self.size / 2 > window.game_size[1] / 2):
-            # horizontal overlap resolution
+            # top overlap resolution
             self.position[1] = window.game_size[1] / 2 - self.size / 2
             self.velocity[1] *= -1
+            self.invoke_collision_delegate(None, (0, -1))
         elif (self.position[1] - self.size / 2 < -window.game_size[1] / 2):
-            # vertical overlap resolution
+            # bottom overlap resolution
             self.position[1] = -window.game_size[1] / 2 + self.size / 2
             self.velocity[1] *= -1
+            self.invoke_collision_delegate(None, (0, 1))
+        
+    def invoke_collision_delegate(self, other, resolution_direction):
+        if self.on_collision_delegate is not None: 
+            self.on_collision_delegate(other, resolution_direction)
 
     def get_overlap_rect(self, paddle_rect):
         self_rect = self.get_rect()
