@@ -44,12 +44,11 @@ class Game:
 
         self.player1.update()
         self.player2.update()
+        self.ball.update([self.player1.get_rect(), self.player2.get_rect()])
 
         self.player1.draw()
         self.player2.draw()
         self.ball.show()
-
-        self.ball.update([self.player1.get_rect(), self.player2.get_rect()])
 
         window.update()
 

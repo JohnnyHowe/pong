@@ -7,17 +7,14 @@ class Ball:
 
     def __init__(self):
         self.position = [0, 0]
-        self.velocity = [1, 0]
+        self.velocity = [4, 0]
 
     def update(self, paddle_rects):
         if (pygame.key.get_pressed()[pygame.K_r]):
             self.position = [0, 0]
 
-        m = pygame.mouse.get_rel()
-        self.position = [self.position[0] + m[0] / 10, self.position[1] - m[1] / 10]
-
-        # self.position[0] += self.velocity[0] * clock.dt_seconds
-        # self.position[1] += self.velocity[1] * clock.dt_seconds
+        self.position[0] += self.velocity[0] * clock.dt_seconds
+        self.position[1] += self.velocity[1] * clock.dt_seconds
         self.process_collisions(paddle_rects)
 
     def process_collisions(self, paddle_rects):
@@ -29,9 +26,16 @@ class Ball:
         Is a basic 2d, axis aligned collision detection and resolution """
         if not self.is_colliding(paddle_rect): return
 
+        # collision resolution
         overlap_rect = self.get_overlap_rect(paddle_rect)
-        window.draw_rect(overlap_rect, (255, 0, 0))
-        
+        if (overlap_rect[2] < overlap_rect[3]):
+            is_left_of_paddle = self.position[0] < paddle_rect[0] + paddle_rect[2] / 2
+            self.position[0] -= overlap_rect[2] * (1 if is_left_of_paddle else -1)
+            self.velocity[0] *= -1
+        else:
+            is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
+            self.position[1] += overlap_rect[3] * (1 if is_above_paddle else -1)
+            self.velocity[1] *= -1
 
     def get_overlap_rect(self, paddle_rect):
         self_rect = self.get_rect()
