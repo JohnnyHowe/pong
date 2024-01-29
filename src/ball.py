@@ -7,7 +7,7 @@ class Ball:
 
     def __init__(self):
         self.position = [0, 0]
-        self.velocity = [4, 7]
+        self.velocity = [4, 4]
 
     def update(self, paddle_rects):
         if (pygame.key.get_pressed()[pygame.K_r]):
