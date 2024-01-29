@@ -18,42 +18,51 @@ class Game:
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
 
     def run(self):
-        running = True
-        target_camera_rotation_rads = 0
-
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.VIDEORESIZE:
-                    window.set_size((event.w, event.h))
-            
+        while True:
             clock.tick()
+            self.step()
 
-            target_camera_rotation_rads = 0
-            rotation_effect = math.radians(user_config.get("juice_screen_movement_from_paddle_max_rotation_degrees") / 2)
-            target_camera_rotation_rads += self.player1.player_input.get_movement() * rotation_effect
-            target_camera_rotation_rads -= self.player2.player_input.get_movement() * rotation_effect
-            window.camera_rotation_rads = self.lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed"))
+    def step(self):
+        self.run_event_loop()
 
-            movement = self.player1.player_input.get_movement() + self.player2.player_input.get_movement()
-            target_camera_vertical_position = 0
-            if abs(movement) == 2: target_camera_vertical_position = (movement / 2) * user_config.get("juice_screen_movement_from_paddle_max_vertical")
-            window.camera_position = (0, self.lerp(window.camera_position[1], target_camera_vertical_position, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed")))
+        target_camera_rotation_rads = 0
+        rotation_effect = math.radians(user_config.get("juice_screen_movement_from_paddle_max_rotation_degrees") / 2)
+        target_camera_rotation_rads += self.get_player_rotation_effect(self.player1) * rotation_effect
+        target_camera_rotation_rads -= self.get_player_rotation_effect(self.player2) * rotation_effect
+        window.camera_rotation_rads = self.lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed"))
 
-            window._draw_buffer.fill((0, 0, 0))
-            window.fill_undefined_area((100, 100, 100))
-            window.draw_screen_gizmos()
+        movement = self.player1.player_input.get_movement() + self.player2.player_input.get_movement()
+        target_camera_vertical_position = 0
+        if abs(movement) == 2: target_camera_vertical_position = (movement / 2) * user_config.get("juice_screen_movement_from_paddle_max_vertical")
+        window.camera_position = (0, self.lerp(window.camera_position[1], target_camera_vertical_position, clock.dt_seconds * user_config.get("juice_screen_movement_from_paddle_lerp_speed")))
 
-            self.player1.update()
-            self.player2.update()
+        window._draw_buffer.fill((0, 0, 0))
+        window.fill_undefined_area((100, 100, 100))
+        window.draw_screen_gizmos()
 
-            self.player1.draw()
-            self.player2.draw()
+        self.player1.update()
+        self.player2.update()
 
-            window.update()
+        self.player1.draw()
+        self.player2.draw()
 
-        pygame.quit()
+        window.update()
+
+    def get_player_rotation_effect(self, player):
+        effect = player.player_input.get_movement()
+        print(str(player.get_desired_movement()) + " " + str(player.get_vertical_position_normalized()))
+        if (player.get_desired_movement() > 0 and player.get_vertical_position_normalized() == 1 or 
+            player.get_desired_movement() < 0 and player.get_vertical_position_normalized() == -1):
+            effect = -effect
+        return effect
+
+    def run_event_loop(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            if event.type == pygame.VIDEORESIZE:
+                window.set_size((event.w, event.h))
+
 
     def lerp(self, a, b, t):
         return a + (b - a) * t
