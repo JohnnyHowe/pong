@@ -13,19 +13,21 @@ class Game:
     # Lots of ugly code in this class
     # Please forgive me
 
-    player1 = None
-    player2 = None
-    ball = None
-
     def __init__(self):
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+        self.last_ball_start_side = 1 
         self.reset_ball()
         self.board_ball_knock = [0, 0]
 
     def reset_ball(self):
         self.ball = Ball()
         self.ball.on_collision_delegate = self.ball_collision_delegate
+        self.ball.velocity = [0, 0]
+
+        self.last_ball_start_side = -self.last_ball_start_side
+        self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2
+        self.ball_held_time_left = GAME_BALL_HOLD_TIME
 
     def run(self):
         while True:
@@ -39,8 +41,15 @@ class Game:
         self.player2.update()
         self.ball.update([self.player1, self.player2])
 
-        if (self.ball.is_off_screen_horizontal()):
+        if self.ball.is_off_screen_horizontal():
             self.reset_ball()
+
+        if self.ball_held_by is not None:
+            self.ball.position = [self.ball_held_by.position[0] + (self.ball_held_by.size[0] / 2 + self.ball.size) * -self.last_ball_start_side, self.ball_held_by.position[1]]
+            self.ball_held_time_left -= clock.dt_seconds
+            if (self.ball_held_time_left <= 0):
+                self.ball_held_by = None
+                self.ball.velocity = [GAME_BALL_START_SPEED * self.last_ball_start_side, 0]
 
         # visuals
         window._draw_buffer.fill((0, 0, 0))

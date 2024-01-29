@@ -57,4 +57,3 @@ class Player:
     
     def knock_back(self, knock_back):
         self.target_knock_back = knock_back
-        print("knock back", knock_back)
