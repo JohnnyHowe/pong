@@ -55,9 +55,8 @@ class Game:
                 self.ball.velocity = [GAME_BALL_START_SPEED * self.last_ball_start_side, 0]
 
         # visuals
-        window._draw_buffer.fill((0, 0, 0))
+        # window._draw_buffer.fill((0, 0, 0))
         window.fill_undefined_area((150, 150, 150))
-        # window.draw_screen_gizmos()
         window.draw_fps()
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
