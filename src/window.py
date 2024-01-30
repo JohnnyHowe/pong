@@ -14,6 +14,7 @@ class _Window:
 
     def __init__(self):
         pygame.display.set_caption("Not Pong")
+        pygame.font.init()
         self.set_size(self.window_size)
 
     def set_size(self, size):
@@ -88,6 +89,16 @@ class _Window:
     def draw_screen_line(self, start, end, color, width=1):
         if width == 0: return 
         pygame.draw.line(self._draw_buffer, color, start, end, max(1, int(width)))
+
+    def draw_text(self, text, center_position, color=(255, 255, 255), size=1):
+        my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
+        text_surface = my_font.render(str(text), True, color)
+
+        text_rect = text_surface.get_rect()
+        screen_center = self.get_screen_position(center_position)
+        screen_top_left = (screen_center[0] - text_rect.width / 2, screen_center[1] - text_rect.height / 2)
+
+        self._draw_buffer.blit(text_surface, screen_top_left)
 
     # =============================================================================================
     # Position conversion methods and helpers

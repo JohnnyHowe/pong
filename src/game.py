@@ -16,6 +16,7 @@ class Game:
     def __init__(self):
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+        self.scores = [0, 0]
         self.last_ball_start_side = 1 
         self.reset_ball()
         self.board_ball_knock = [0, 0]
@@ -42,8 +43,10 @@ class Game:
         self.ball.update([self.player1, self.player2])
 
         if self.ball.is_off_screen_horizontal():
+            self.scores[1 if self.ball.position[0] < 0 else 0] += 1
             self.reset_ball()
 
+        # pregame thing, when ball is held by player
         if self.ball_held_by is not None:
             self.ball.position = [self.ball_held_by.position[0] + (self.ball_held_by.size[0] / 2 + self.ball.size) * -self.last_ball_start_side, self.ball_held_by.position[1]]
             self.ball_held_time_left -= clock.dt_seconds
@@ -54,6 +57,10 @@ class Game:
         # visuals
         window._draw_buffer.fill((0, 0, 0))
         window.fill_undefined_area((150, 150, 150))
+        # window.draw_screen_gizmos()
+
+        window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
+        window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 2)
 
         self.player1.draw()
         self.player2.draw()
