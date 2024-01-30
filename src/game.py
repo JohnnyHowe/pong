@@ -57,7 +57,8 @@ class Game:
         # visuals
         window._draw_buffer.fill((0, 0, 0))
         window.fill_undefined_area((150, 150, 150))
-        window.draw_screen_gizmos()
+        # window.draw_screen_gizmos()
+        window.draw_fps()
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
         window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 2)
@@ -101,6 +102,9 @@ class Game:
                 quit()
             if event.type == pygame.VIDEORESIZE:
                 window.set_size((event.w, event.h))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    quit()
 
     def ball_collision_delegate(self, other, resolution_direction):
         # Ugly code. I'm sorry LSP

@@ -25,8 +25,7 @@ class _Window:
         self._draw_buffer = pygame.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
 
     def update(self):
-        # rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
-        rotated_draw_buffer = self._draw_buffer
+        rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
         rotated_draw_buffer_center = rotated_draw_buffer.get_rect().center
         screen_center = (self.window_size[0] / 2, self.window_size[1] / 2)
         rotated_buffer_draw_position = (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1])
