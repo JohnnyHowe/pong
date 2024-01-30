@@ -57,7 +57,7 @@ class Game:
         # visuals
         window._draw_buffer.fill((0, 0, 0))
         window.fill_undefined_area((150, 150, 150))
-        # window.draw_screen_gizmos()
+        window.draw_screen_gizmos()
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
         window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 2)

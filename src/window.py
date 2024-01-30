@@ -1,6 +1,6 @@
 import math
 import pygame
-
+from .clock import clock
 
 class _Window:
 
@@ -25,7 +25,8 @@ class _Window:
         self._draw_buffer = pygame.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
 
     def update(self):
-        rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
+        # rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
+        rotated_draw_buffer = self._draw_buffer
         rotated_draw_buffer_center = rotated_draw_buffer.get_rect().center
         screen_center = (self.window_size[0] / 2, self.window_size[1] / 2)
         rotated_buffer_draw_position = (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1])
@@ -35,11 +36,15 @@ class _Window:
         draw_position = (rotated_buffer_draw_position[0] + camera_screen_position[0], rotated_buffer_draw_position[1] + camera_screen_position[1])
 
         self._screen.blit(rotated_draw_buffer, draw_position)
-        pygame.display.update()
+        pygame.display.flip()
 
     def draw_screen_gizmos(self):
         self.draw_grid()
         self.draw_origin_gizmo()
+        self.draw_fps()
+
+    def draw_fps(self):
+        self.draw_text("FPS: " + str(int(clock.smoothed_fps)), (-self.game_size[0] / 2, self.game_size[1] / 2), size=0.5, center_aligned=False)
 
     def draw_grid(self, color = (50, 50, 50), line_width=0.01):
         game_display_rect = self.get_game_display_rect_no_rotation()
@@ -90,15 +95,17 @@ class _Window:
         if width == 0: return 
         pygame.draw.line(self._draw_buffer, color, start, end, max(1, int(width)))
 
-    def draw_text(self, text, center_position, color=(255, 255, 255), size=1):
+    def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True):
         my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
         text_surface = my_font.render(str(text), True, color)
 
-        text_rect = text_surface.get_rect()
-        screen_center = self.get_screen_position(center_position)
-        screen_top_left = (screen_center[0] - text_rect.width / 2, screen_center[1] - text_rect.height / 2)
+        draw_position = self.get_screen_position(position)
+        if center_aligned:
+            text_rect = text_surface.get_rect()
+            screen_center = self.get_screen_position(position)
+            draw_position = (screen_center[0] - text_rect.width / 2, screen_center[1] - text_rect.height / 2)
 
-        self._draw_buffer.blit(text_surface, screen_top_left)
+        self._draw_buffer.blit(text_surface, draw_position)
 
     # =============================================================================================
     # Position conversion methods and helpers
