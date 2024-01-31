@@ -8,6 +8,7 @@ from .window import window
 from .player import Player
 from .ball import Ball
 from .easings import *
+from .speaker import speaker
 
 class Game:
     # Lots of ugly code in this class
@@ -44,6 +45,7 @@ class Game:
 
         if self.ball.is_off_screen_horizontal():
             self.scores[1 if self.ball.position[0] < 0 else 0] += 1
+            speaker.play("game_over")
             self.reset_ball()
 
         # pregame thing, when ball is held by player
@@ -70,6 +72,11 @@ class Game:
         window.update()
 
     def step_juice(self):
+        for player in [self.player1, self.player2]:
+            if (abs(player.position[1]) + player.size[1] / 2 >= window.game_size[1] / 2 and
+                not abs(player.last_position[1]) + player.size[1] / 2 >= window.game_size[1] / 2):
+                speaker.play("paddle_hit_wall")
+
         rotation_effect = math.radians(JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_ROTATION_DEGREES / 2)
         p1_effect = self.get_player_rotation_effect(self.player1)
         p2_effect = self.get_player_rotation_effect(self.player2)
@@ -110,10 +117,12 @@ class Game:
 
         # collided with horizontal wall
         if other is None:
+            speaker.play("ball_hit_wall")
             self.board_ball_knock[1] = self.get_screen_knock_power()[1] * resolution_direction[1]
 
         # collided with paddle
         elif isinstance(other, Player):
+            speaker.play("ball_hit_paddle")
             other.knock_back(-resolution_direction[0] * JUICE_PADDLE_KNOCKBACK)
             self.board_ball_knock[0] = self.get_screen_knock_power()[0] * resolution_direction[0]
         

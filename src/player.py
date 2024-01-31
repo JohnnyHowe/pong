@@ -10,7 +10,7 @@ class Player:
         self.size = size
         self.player_input = player_input
         self.velocity = [0, 0]
-        self.last_movement = 0
+        self.last_position = position
         self.speed = 5
         self.target_knock_back = 0;
         self.smoothed_knock_back = 0;
@@ -22,9 +22,9 @@ class Player:
         movement = self.get_desired_movement()
         self.velocity[1] = movement * self.speed 
 
+        self.last_position = list(self.position)
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
-
         self.clamp_position()
 
     def clamp_position(self):

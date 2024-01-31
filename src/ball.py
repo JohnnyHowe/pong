@@ -1,5 +1,6 @@
 import math
 import random
+
 from .window import window
 from .clock import clock
 from .game_configuration import * 
@@ -137,5 +138,5 @@ class Ball:
         return (self.position[0] - self.size / 2, self.position[1] + self.size / 2, self.size, self.size)
 
     def is_off_screen_horizontal(self):
-        max_x = window.game_size[0] / 2
+        max_x = window.game_size[0] / 2 - self.size / 2
         return abs(self.position[0]) > max_x 
