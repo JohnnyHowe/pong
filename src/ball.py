@@ -1,4 +1,5 @@
 import math
+import random
 from .window import window
 from .clock import clock
 from .game_configuration import * 
@@ -85,6 +86,7 @@ class Ball:
             self.position[1] -= overlap_rect[3] * resolution_direction[1] 
             self.velocity[1] = -abs(self.velocity[1]) * resolution_direction[1] 
 
+        self.add_random_velocity();
         self.invoke_collision_delegate(paddle, resolution_direction)
 
     def process_game_border_collisions(self):
@@ -93,11 +95,20 @@ class Ball:
             self.position[1] = window.game_size[1] / 2 - self.size / 2
             self.velocity[1] *= -1
             self.invoke_collision_delegate(None, (0, -1))
+            self.add_random_velocity();
         elif (self.position[1] - self.size / 2 < -window.game_size[1] / 2):
             # bottom overlap resolution
             self.position[1] = -window.game_size[1] / 2 + self.size / 2
             self.velocity[1] *= -1
             self.invoke_collision_delegate(None, (0, 1))
+            self.add_random_velocity();
+
+    def add_random_velocity(self):
+        self.velocity[0] += (self.signed_random() * GAME_BALL_BOUNCE_VELOCITY_RANDOMNESS_PROPORTION) * self.velocity[0] + GAME_BALL_VELOCITY_RANDOMNESS_MINIMUM * self.signed_random() 
+        self.velocity[1] += (self.signed_random() * GAME_BALL_BOUNCE_VELOCITY_RANDOMNESS_PROPORTION) * self.velocity[1] + GAME_BALL_VELOCITY_RANDOMNESS_MINIMUM * self.signed_random()
+
+    def signed_random(self):
+        return random.random() * 2 - 1
         
     def invoke_collision_delegate(self, other, resolution_direction):
         if self.on_collision_delegate is not None: 
