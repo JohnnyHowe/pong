@@ -1,5 +1,6 @@
 @echo off
 
+echo "Setting up environment..."
 set PYTHON=python
 set VENV_NAME=venv
 %PYTHON% -m venv %VENV_NAME%
@@ -10,10 +11,10 @@ pip install nuitka
 pip install pygame
 
 echo "Compiling ..."
-nuitka --standalone --include-data-dir=./assets=assets main.py
+call nuitka --standalone --disable-console --include-data-dir=./assets=assets main.py
 
 echo "Tidying up ..."
-powershell Compress-Archive -Path "main.dist" -DestinationPath "main.dist.zip"
+powershell Compress-Archive -Path "main.dist" -DestinationPath "main.dist.zip" -Force
 
 echo "Done, deactivating..."
 deactivate
