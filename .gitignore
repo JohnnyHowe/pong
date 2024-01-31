@@ -153,3 +153,4 @@ cython_debug/
 
 main.dist/
 main.build/
+main.dist.zip
