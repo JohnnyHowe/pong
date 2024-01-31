@@ -43,24 +43,13 @@ class _Window:
     # =============================================================================================
 
     def draw_rect(self, world_rect, color):
-        rect_screen_center = self.get_screen_position((world_rect[0] + world_rect[2] / 2, world_rect[1] - world_rect[3] / 2))
-        rect_screen_size = (world_rect[2] * self._get_game_display_scale(), world_rect[3] * self._get_game_display_scale())
-
-        surface = pygame.Surface(rect_screen_size, pygame.SRCALPHA);
-        surface.fill(color)
-        surface = pygame.transform.rotate(surface, math.degrees(self.camera_rotation_rads))
-
-        surface_rect = surface.get_rect()
-        self._screen.blit(surface, (rect_screen_center[0] - surface_rect.width / 2, rect_screen_center[1] - surface_rect.height / 2))
+        self.draw_polygon([(world_rect[0], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1] - world_rect[3]), (world_rect[0], world_rect[1] - world_rect[3])], color, 0)
 
     def draw_polygon(self, points, color, width=0):
         screen_points = []
         for point in points:
             screen_points.append(self.get_screen_position(point))
         pygame.draw.polygon(self._screen, color, screen_points, int(width * self._get_game_display_scale()))
-
-    def draw_line(self, p1, p2, width, color):
-        pygame.draw.line(self._screen, color, self.get_screen_position(p1), self.get_screen_position(p2), int(width * self._get_game_display_scale()))
 
     def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True):
         my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
@@ -79,15 +68,6 @@ class _Window:
     # Position conversion methods and helpers
     # =============================================================================================
 
-    def get_screen_rect(self, world_rect):
-        """ Get the world rectangle converted in to screen coordinates.
-        Takes into account everything: scale, viewport offset ..."""
-        game_display_scale = self._get_game_display_scale()
-        return pygame.Rect((world_rect[0] + self.game_size[0] / 2) * game_display_scale,
-                           (self.game_size[1] / 2 - world_rect[1]) * game_display_scale,
-                           world_rect[2] * game_display_scale,
-                           world_rect[3] * game_display_scale)
-
     def get_screen_position(self, world_position):
         """ Get the world position converted in to screen coordinates.
         Takes into account everything: scale, viewport offset ..."""
@@ -104,13 +84,6 @@ class _Window:
                    translated[0] * math.sin(self.camera_rotation_rads) + translated[1] * math.cos(self.camera_rotation_rads))
         return rotated
 
-    def _get_game_display_screen_rect(self):
-        """ Get the rectangle area and position of the screen that the game is displayed on."""
-        game_display_offset = self._get_game_display_offset()
-        game_display_scale = self._get_game_display_scale()
-        game_display_size = (self.game_size[0] * game_display_scale, self.game_size[1] * game_display_scale)
-        return pygame.Rect(game_display_offset[0], game_display_offset[1], game_display_size[0], game_display_size[1])
-    
     def _get_game_display_scale(self):
         """ Get the scale of the game display in pixels per game unit. """
         return min(self.window_size[0] * self.game_display_scale / self.game_size[0], self.window_size[1] * self.game_display_scale / self.game_size[1])
