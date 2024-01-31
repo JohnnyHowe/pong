@@ -20,21 +20,10 @@ class _Window:
     def set_size(self, size):
         self.window_size = size
         self._screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
-
         scale = self._get_game_display_scale()
         self._draw_buffer = pygame.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
 
     def update(self):
-        # rotated_draw_buffer = pygame.transform.rotate(self._draw_buffer, math.degrees(self.camera_rotation_rads))
-        # rotated_draw_buffer_center = rotated_draw_buffer.get_rect().center
-        # screen_center = (self.window_size[0] / 2, self.window_size[1] / 2)
-        # rotated_buffer_draw_position = (screen_center[0] - rotated_draw_buffer_center[0], screen_center[1] - rotated_draw_buffer_center[1])
-
-        # game_display_scale = self._get_game_display_scale()
-        # camera_screen_position = (self.camera_position[0] * game_display_scale, self.camera_position[1] * game_display_scale)
-        # draw_position = (rotated_buffer_draw_position[0] + camera_screen_position[0], rotated_buffer_draw_position[1] + camera_screen_position[1])
-
-        # self._screen.blit(rotated_draw_buffer, draw_position)
         pygame.display.flip()
 
     def draw_fps(self):
@@ -42,28 +31,39 @@ class _Window:
 
     def fill_undefined_area(self, color=(255, 255, 255)):
         self._screen.fill(color)
+        self.draw_rect((-self.game_size[0] / 2, self.game_size[1] / 2, self.game_size[0], self.game_size[1]), (0, 0, 0))
 
-        scale = self._get_game_display_scale()
-        background = pygame.surface.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
-        background.fill((0, 0, 0))
-        background = pygame.transform.rotate(background, math.degrees(self.camera_rotation_rads))
-        self._screen.blit(background, (0, 0))
-
-
+    def draw_border(self, color=(255, 255, 255), thickness=1):
+        half_thickness = thickness / 2
+        max_x = (self.game_size[0] + thickness) / 2
+        max_y = (self.game_size[1] + thickness) / 2
+        self.draw_line((max_x + half_thickness, max_y), (-(max_x + half_thickness), max_y), thickness, color)
+        self.draw_line((max_x + half_thickness, -max_y), (-(max_x + half_thickness), -max_y), thickness, color)
+        self.draw_line((max_x, max_y), (max_x, -max_y), thickness, color)
+        self.draw_line((-max_x, max_y), (-max_x, -max_y), thickness, color)
 
     # =============================================================================================
     # Client draw methods
     # =============================================================================================
 
     def draw_rect(self, world_rect, color):
-        self.draw_screen_rect(self.get_screen_rect(world_rect), color)
+        rect_screen_center = self.get_screen_position((world_rect[0] + world_rect[2] / 2, world_rect[1] - world_rect[3] / 2))
+        rect_screen_size = (world_rect[2] * self._get_game_display_scale(), world_rect[3] * self._get_game_display_scale())
 
-    def draw_screen_rect(self, screen_rect, color):
-        pygame.draw.rect(self._screen, color, screen_rect)
+        surface = pygame.Surface(rect_screen_size, pygame.SRCALPHA);
+        surface.fill(color)
+        surface = pygame.transform.rotate(surface, math.degrees(self.camera_rotation_rads))
+
+        surface_rect = surface.get_rect()
+        self._screen.blit(surface, (rect_screen_center[0] - surface_rect.width / 2, rect_screen_center[1] - surface_rect.height / 2))
+
+    def draw_line(self, p1, p2, width, color):
+        pygame.draw.line(self._screen, color, self.get_screen_position(p1), self.get_screen_position(p2), int(width * self._get_game_display_scale()))
 
     def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True):
         my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
         text_surface = my_font.render(str(text), True, color)
+        text_surface = pygame.transform.rotate(text_surface, math.degrees(self.camera_rotation_rads))
 
         draw_position = self.get_screen_position(position)
         if center_aligned:
@@ -92,10 +92,11 @@ class _Window:
         world_position_translated = self._get_world_position_with_camera_offset(world_position)
         world_position_translated = (world_position_translated[0] + self.game_size[0] / 2, self.game_size[1] / 2 -  world_position_translated[1])
         game_display_scale = self._get_game_display_scale()
-        return world_position_translated[0] * game_display_scale, world_position_translated[1] * game_display_scale
+        game_display_offset = (self.window_size[0] / 2 - self.game_size[0] * game_display_scale / 2, self.window_size[1] / 2 - self.game_size[1] * game_display_scale / 2)
+        return world_position_translated[0] * game_display_scale + game_display_offset[0], world_position_translated[1] * game_display_scale + game_display_offset[1]
 
     def _get_world_position_with_camera_offset(self, world_position):
-        return world_position
+        # return world_position
         translated = (world_position[0] - self.camera_position[0], world_position[1] - self.camera_position[1])
         rotated = (translated[0] * math.cos(self.camera_rotation_rads) - translated[1] * math.sin(self.camera_rotation_rads),
                    translated[0] * math.sin(self.camera_rotation_rads) + translated[1] * math.cos(self.camera_rotation_rads))

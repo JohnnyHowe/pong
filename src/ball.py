@@ -108,7 +108,7 @@ class Ball:
                 self_rect[1] > paddle_rect[1] - paddle_rect[3] and 
                 self_rect[1] - self_rect[3] < paddle_rect[1])
 
-    def show(self):
+    def draw(self):
         window.draw_rect(self.get_rect(), (255, 255, 255))
     
     def get_rect(self):

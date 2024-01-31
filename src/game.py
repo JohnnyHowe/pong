@@ -55,8 +55,8 @@ class Game:
                 self.ball.velocity = [GAME_BALL_START_SPEED * self.last_ball_start_side, 0]
 
         # visuals
-        # window._draw_buffer.fill((0, 0, 0))
-        window.fill_undefined_area((150, 150, 150))
+        # window.fill_undefined_area((150, 150, 150))
+        window._screen.fill((0, 0, 0))
         window.draw_fps()
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
@@ -64,9 +64,11 @@ class Game:
 
         self.player1.draw()
         self.player2.draw()
-        self.ball.show()
-
+        self.ball.draw()
+        
         self.step_juice()
+        window.draw_border((255, 0, 0))
+
         window.update()
 
     def step_juice(self):
