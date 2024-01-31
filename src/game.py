@@ -21,6 +21,7 @@ class Game:
         self.last_ball_start_side = 1 
         self.reset_ball()
         self.board_ball_knock = [0, 0]
+        self.time_since_last_click_seconds = 1
 
     def reset_ball(self):
         self.ball = Ball()
@@ -103,6 +104,7 @@ class Game:
         return effect
 
     def run_event_loop(self):
+        self.time_since_last_click_seconds += clock.dt_seconds
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
@@ -114,6 +116,12 @@ class Game:
                     quit()
                 if event.key == pygame.K_F11:
                     window.toggle_fullscreen()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if (self.time_since_last_click_seconds < 0.2):
+                        window.toggle_fullscreen()
+                    else:
+                        self.time_since_last_click_seconds = 0
 
     def ball_collision_delegate(self, other, resolution_direction):
         # Ugly code. I'm sorry LSP
