@@ -42,8 +42,24 @@ class _Window:
     # Client draw methods
     # =============================================================================================
 
-    def draw_rect(self, world_rect, color):
-        self.draw_polygon([(world_rect[0], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1] - world_rect[3]), (world_rect[0], world_rect[1] - world_rect[3])], color, 0)
+    def draw_rect(self, world_rect, color, rotation_rads=0):
+        points = [(world_rect[0], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1] - world_rect[3]), (world_rect[0], world_rect[1] - world_rect[3])]
+        center = (world_rect[0] + world_rect[2] / 2, world_rect[1] - world_rect[3] / 2)
+        self.draw_polygon(self.rotate_points(center, points, rotation_rads), color, 0)
+
+    def rotate_points(self, origin, points, angle_rads):
+        if (angle_rads == 0): return points
+        rotated_points = []
+        for point in points:
+            rotated_points.append(self.rotate_point(origin, point, angle_rads))
+        return rotated_points
+
+    def rotate_point(self, origin, point, angle_rads):
+        ox, oy = origin
+        px, py = point
+        qx = ox + math.cos(-angle_rads) * (px - ox) - math.sin(-angle_rads) * (py - oy)
+        qy = oy + math.sin(-angle_rads) * (px - ox) + math.cos(-angle_rads) * (py - oy)
+        return qx, qy
 
     def draw_polygon(self, points, color, width=0):
         screen_points = []
