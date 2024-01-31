@@ -1,6 +1,7 @@
 import math
 import pygame
 from .clock import clock
+from .game_configuration import *
 
 class _Window:
 
@@ -12,17 +13,36 @@ class _Window:
     camera_position = (0, 0)
     game_display_scale = 0.9
 
+    windowed_size = (1280, 720)
+
     def __init__(self):
         pygame.display.set_caption("Not Pong")
         pygame.font.init()
-        self.set_size(self.window_size)
+        self.force_set_size(self.window_size)
+        if GAME_START_FULLSCREEN: self.toggle_fullscreen()
 
-    def set_size(self, size):
-        self.window_size = size
+    def set_size(self, new_size):
+        is_fullscreen = self._screen.get_flags() & pygame.FULLSCREEN == pygame.FULLSCREEN
+        if (not is_fullscreen): self.force_set_size(new_size)
+
+    def force_set_size(self, new_size):
+        self.window_size = new_size
         self._screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+        self.refresh_draw_buffer()
+
+    def refresh_draw_buffer(self):
         scale = self._get_game_display_scale()
         self._draw_buffer = pygame.Surface((self.game_size[0] * scale, self.game_size[1] * scale), pygame.SRCALPHA)
 
+    def toggle_fullscreen(self):
+        is_fullscreen = self._screen.get_flags() & pygame.FULLSCREEN == pygame.FULLSCREEN
+        if (is_fullscreen):
+            self.force_set_size(self.windowed_size)
+        else:
+            self._screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            self.window_size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
+            self.refresh_draw_buffer()
+        
     def update(self):
         pygame.display.flip()
 

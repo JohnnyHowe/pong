@@ -108,9 +108,12 @@ class Game:
                 quit()
             if event.type == pygame.VIDEORESIZE:
                 window.set_size((event.w, event.h))
+                pass
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     quit()
+                if event.key == pygame.K_F11:
+                    window.toggle_fullscreen()
 
     def ball_collision_delegate(self, other, resolution_direction):
         # Ugly code. I'm sorry LSP
