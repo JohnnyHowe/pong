@@ -33,14 +33,10 @@ class _Window:
         self._screen.fill(color)
         self.draw_rect((-self.game_size[0] / 2, self.game_size[1] / 2, self.game_size[0], self.game_size[1]), (0, 0, 0))
 
-    def draw_border(self, color=(255, 255, 255), thickness=1):
-        half_thickness = thickness / 2
-        max_x = (self.game_size[0] + thickness) / 2
-        max_y = (self.game_size[1] + thickness) / 2
-        self.draw_line((max_x + half_thickness, max_y), (-(max_x + half_thickness), max_y), thickness, color)
-        self.draw_line((max_x + half_thickness, -max_y), (-(max_x + half_thickness), -max_y), thickness, color)
-        self.draw_line((max_x, max_y), (max_x, -max_y), thickness, color)
-        self.draw_line((-max_x, max_y), (-max_x, -max_y), thickness, color)
+    def fill_game_area(self, color=(255, 255, 255)):
+        x = (self.game_size[0]) / 2
+        y = (self.game_size[1]) / 2
+        self.draw_polygon([(x, y), (x, -y), (-x, -y), (-x, y)], color, 0)
 
     # =============================================================================================
     # Client draw methods
@@ -56,6 +52,12 @@ class _Window:
 
         surface_rect = surface.get_rect()
         self._screen.blit(surface, (rect_screen_center[0] - surface_rect.width / 2, rect_screen_center[1] - surface_rect.height / 2))
+
+    def draw_polygon(self, points, color, width=0):
+        screen_points = []
+        for point in points:
+            screen_points.append(self.get_screen_position(point))
+        pygame.draw.polygon(self._screen, color, screen_points, int(width * self._get_game_display_scale()))
 
     def draw_line(self, p1, p2, width, color):
         pygame.draw.line(self._screen, color, self.get_screen_position(p1), self.get_screen_position(p2), int(width * self._get_game_display_scale()))
