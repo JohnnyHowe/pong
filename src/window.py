@@ -1,5 +1,6 @@
 import math
 import pygame
+from pygame import gfxdraw
 from .clock import clock
 from .game_configuration import *
 
@@ -85,11 +86,15 @@ class _Window:
         screen_points = []
         for point in points:
             screen_points.append(self.get_screen_position(point))
-        pygame.draw.polygon(self._screen, color, screen_points, int(width * self._get_game_display_scale()))
+        if GAME_ANTIALIASING:
+            gfxdraw.aapolygon(self._screen, screen_points, color)
+            gfxdraw.filled_polygon(self._screen, screen_points, color)
+        else:
+            pygame.draw.polygon(self._screen, color, screen_points, int(width * self._get_game_display_scale()))
 
     def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True):
         my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
-        text_surface = my_font.render(str(text), True, color)
+        text_surface = my_font.render(str(text), GAME_ANTIALIASING, color)
         text_surface = pygame.transform.rotate(text_surface, math.degrees(self.camera_rotation_rads))
 
         draw_position = self.get_screen_position(position)
