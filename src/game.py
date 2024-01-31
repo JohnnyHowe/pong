@@ -57,7 +57,6 @@ class Game:
         # visuals
         window._screen.fill((100, 100, 100))
         window.fill_game_area((0, 0, 0))
-        window.draw_fps()
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
         window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 2)
