@@ -11,7 +11,6 @@ class Ball:
         self.velocity = [4, 4]
         self.size = 0.4
         self.base_speed = 4
-        self.speed_increase_rate = 0.5
         self.time_alive = 0
         self.on_collision_delegate = None   # (self, other, resolution_direction)
         self.spin = 0   # > 0 is clockwise, < 0 is anti-clockwise
@@ -35,8 +34,8 @@ class Ball:
 
     def apply_spin(self):
         spin_force_dir = -self.velocity[1], self.velocity[0]
-        self.velocity[0] += spin_force_dir[0] * self.spin * GAME_BALL_SPIN_EFFECT * clock.dt_seconds
-        self.velocity[1] += spin_force_dir[1] * self.spin * GAME_BALL_SPIN_EFFECT * clock.dt_seconds
+        self.velocity[0] += spin_force_dir[0] * self.spin * GAME_BALL_SPIN_EFFECT_ON_BALL_VELOCITY * clock.dt_seconds
+        self.velocity[1] += spin_force_dir[1] * self.spin * GAME_BALL_SPIN_EFFECT_ON_BALL_VELOCITY * clock.dt_seconds
 
     def clamp_velocity_proportion(self):
         """ Stop the vertical speed/ horizontal speed proportion getting out of hand. """
@@ -53,7 +52,7 @@ class Ball:
         self.velocity[1] *= too_fast_multiplier
 
     def get_target_speed(self):
-        return self.base_speed + self.speed_increase_rate * self.time_alive 
+        return self.base_speed + GAME_BALL_SPEED_INCREASE_RATE * self.time_alive 
 
     def _get_speed(self):
         return math.sqrt(self.velocity[0] ** 2 + self.velocity[1] ** 2)
