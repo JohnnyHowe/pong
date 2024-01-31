@@ -13,6 +13,8 @@ class Ball:
         self.speed_increase_rate = 0.5
         self.time_alive = 0
         self.on_collision_delegate = None   # (self, other, resolution_direction)
+        self.spin = 0   # > 0 is clockwise, < 0 is anti-clockwise
+        self.visual_angle = 0
 
     def update(self, paddle_rects):
         self.time_alive += clock.dt_seconds
@@ -20,11 +22,20 @@ class Ball:
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
 
+        if (GAME_SPIN_ENABLED): 
+            self.apply_spin()
+            self.visual_angle += self.spin * clock.dt_seconds * GAME_BALL_SPIN_SPEED_VISUAL_MULTIPIER
+
         self.process_paddle_collisions(paddle_rects)
         self.process_game_border_collisions()
 
         self.clamp_velocity_proportion()
         self.set_speed()
+
+    def apply_spin(self):
+        spin_force_dir = -self.velocity[1], self.velocity[0]
+        self.velocity[0] += spin_force_dir[0] * self.spin * GAME_BALL_SPIN_EFFECT * clock.dt_seconds
+        self.velocity[1] += spin_force_dir[1] * self.spin * GAME_BALL_SPIN_EFFECT * clock.dt_seconds
 
     def clamp_velocity_proportion(self):
         """ Stop the vertical speed/ horizontal speed proportion getting out of hand. """
@@ -65,7 +76,8 @@ class Ball:
             resolution_direction = (-1 if is_left_of_paddle else 1, 0)
             self.position[0] += overlap_rect[2] * resolution_direction[0] 
             self.velocity[0] = abs(self.velocity[0]) * resolution_direction[0]
-            self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL 
+            self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL_VELOCITY 
+            self.spin -= paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL_SPIN * resolution_direction[0]
         else:
             # vertical overlap resolution
             is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
@@ -109,7 +121,7 @@ class Ball:
                 self_rect[1] - self_rect[3] < paddle_rect[1])
 
     def draw(self):
-        window.draw_rect(self.get_rect(), (255, 255, 255))
+        window.draw_rect(self.get_rect(), (255, 255, 255), -self.visual_angle)
     
     def get_rect(self):
         return (self.position[0] - self.size / 2, self.position[1] + self.size / 2, self.size, self.size)
