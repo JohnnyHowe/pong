@@ -55,7 +55,7 @@ class Game:
                 self.ball.velocity = [GAME_BALL_START_SPEED * self.last_ball_start_side, 0]
 
         # visuals
-        window._screen.fill((100, 100, 100))
+        window._screen.fill((50, 50, 50))
         window.fill_game_area((0, 0, 0))
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
@@ -110,9 +110,13 @@ class Game:
 
         # collided with horizontal wall
         if other is None:
-            self.board_ball_knock[1] = JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK * resolution_direction[1]
+            self.board_ball_knock[1] = self.get_screen_knock_power()[1] * resolution_direction[1]
 
         # collided with paddle
         elif isinstance(other, Player):
             other.knock_back(-resolution_direction[0] * JUICE_PADDLE_KNOCKBACK)
-            self.board_ball_knock[0] = -JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK * resolution_direction[0]
+            self.board_ball_knock[0] = self.get_screen_knock_power()[0] * resolution_direction[0]
+        
+    def get_screen_knock_power(self):
+        return (lerp(JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MIN_X, JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MAX_X, abs(self.ball.velocity[0]) / JUICE_SCREEN_MOVEMENT_FROM_BALL_SPEED_FOR_KNOCK_MAX_X),
+                lerp(JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MIN_Y, JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MAX_Y, abs(self.ball.velocity[1]) / JUICE_SCREEN_MOVEMENT_FROM_BALL_SPEED_FOR_KNOCK_MAX_Y)) 

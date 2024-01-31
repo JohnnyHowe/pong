@@ -47,14 +47,14 @@ class Ball:
 
     def set_speed(self):
         if (self.velocity[0] == 0): return
-        too_fast_multiplier = self.get_target_speed() / self._get_speed()
+        too_fast_multiplier = self.get_target_speed() / self.get_speed()
         self.velocity[0] *= too_fast_multiplier
         self.velocity[1] *= too_fast_multiplier
 
     def get_target_speed(self):
         return self.base_speed + GAME_BALL_SPEED_INCREASE_RATE * self.time_alive 
 
-    def _get_speed(self):
+    def get_speed(self):
         return math.sqrt(self.velocity[0] ** 2 + self.velocity[1] ** 2)
 
     def process_paddle_collisions(self, paddles):
