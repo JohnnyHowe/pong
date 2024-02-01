@@ -2,6 +2,7 @@ import math
 import random
 import pygame
 
+from .ai_input import AI_Input
 from .game_configuration import *
 from .keyboard_player_input import KeyboardPlayerInput
 from .clock import clock
@@ -16,21 +17,22 @@ class Game:
     # Please forgive me
 
     def __init__(self):
+        self.ball = Ball()
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
-        self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0), size=(0.25, 1.5))
+        self.player2 = Player(AI_Input(self.ball, window.window_size), position=(6, 0), size=(0.25, 1.5))
+
         self.scores = [0, 0]
         self.last_ball_start_side = 1 
-        self.reset_ball()
+        self.reset_game()
         self.board_ball_knock = [0, 0]
         self.time_since_last_click_seconds = 1
 
-    def reset_ball(self):
+    def reset_game(self):
         self.ball_size_index = random.randint(0, len(GAME_BALL_SIZES) - 1)
         self.paddle_size_index = random.randint(0, len(GAME_PADDLE_SIZES) - 1)
 
-        self.ball = Ball(GAME_BALL_SIZES[self.ball_size_index][0])
-        self.ball.on_collision_delegate = self.ball_collision_delegate
         self.ball.velocity = [0, 0]
+        self.ball.position = [0, 0]
 
         self.last_ball_start_side = -self.last_ball_start_side
         self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2
@@ -57,7 +59,7 @@ class Game:
         if self.ball.is_off_screen_horizontal():
             self.scores[1 if self.ball.position[0] < 0 else 0] += 1
             speaker.play("game_over")
-            self.reset_ball()
+            self.reset_game()
 
         # pregame thing, when ball is held by player
         if self.ball_held_by is not None:
@@ -136,7 +138,7 @@ class Game:
                 if event.key == pygame.K_F11:
                     window.toggle_fullscreen()
                 if event.key == pygame.K_r:
-                    self.reset_ball()
+                    self.reset_game()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if (self.time_since_last_click_seconds < 0.2):
