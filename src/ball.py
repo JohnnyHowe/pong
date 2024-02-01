@@ -7,10 +7,10 @@ from .game_configuration import *
 
 class Ball:
 
-    def __init__(self):
+    def __init__(self, size=0.4):
         self.position = [0, 0]
         self.velocity = [4, 4]
-        self.size = 0.4
+        self.size = size
         self.base_speed = 4
         self.time_alive = 0
         self.on_collision_delegate = None   # (self, other, resolution_direction)

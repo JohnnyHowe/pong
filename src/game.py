@@ -15,8 +15,8 @@ class Game:
     # Please forgive me
 
     def __init__(self):
-        self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0))
-        self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0))
+        self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
+        self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0), size=(0.25, 1.5))
         self.scores = [0, 0]
         self.last_ball_start_side = 1 
         self.reset_ball()
@@ -24,7 +24,7 @@ class Game:
         self.time_since_last_click_seconds = 1
 
     def reset_ball(self):
-        self.ball = Ball()
+        self.ball = Ball(0.2)
         self.ball.on_collision_delegate = self.ball_collision_delegate
         self.ball.velocity = [0, 0]
 
@@ -61,8 +61,8 @@ class Game:
         window._screen.fill((50, 50, 50))
         window.fill_game_area((0, 0, 0))
 
-        window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 2)
-        window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 2)
+        window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 1)
+        window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 1)
 
         self.player1.draw()
         self.player2.draw()
