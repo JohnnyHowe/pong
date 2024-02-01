@@ -11,7 +11,6 @@ class Ball:
         self.position = [0, 0]
         self.velocity = [4, 4]
         self.size = size
-        self.base_speed = 4
         self.time_alive = 0
         self.on_collision_delegate = None   # (self, other, resolution_direction)
 
@@ -42,7 +41,7 @@ class Ball:
         self.velocity[1] *= too_fast_multiplier
 
     def get_target_speed(self):
-        return self.base_speed + GAME_BALL_SPEED_INCREASE_RATE * self.time_alive 
+        return GAME_BALL_START_SPEED + GAME_BALL_SPEED_INCREASE_RATE * self.time_alive 
 
     def get_speed(self):
         return math.sqrt(self.velocity[0] ** 2 + self.velocity[1] ** 2)

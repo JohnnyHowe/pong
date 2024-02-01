@@ -14,6 +14,7 @@ class _Speaker:
         }
 
     def play(self, sound):
+        return
         pygame.mixer.Sound.play(self.sounds[sound])
 
 

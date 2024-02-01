@@ -1,4 +1,5 @@
 import math
+import random
 import pygame
 
 from .game_configuration import *
@@ -24,13 +25,17 @@ class Game:
         self.time_since_last_click_seconds = 1
 
     def reset_ball(self):
-        self.ball = Ball(0.2)
+        self.ball = Ball(random.choice(GAME_BALL_SIZES))
         self.ball.on_collision_delegate = self.ball_collision_delegate
         self.ball.velocity = [0, 0]
 
         self.last_ball_start_side = -self.last_ball_start_side
         self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2
         self.ball_held_time_left = GAME_BALL_HOLD_TIME
+
+        paddle_size = random.choice(GAME_PADDLE_SIZES)
+        self.player1.size = paddle_size
+        self.player2.size = paddle_size
 
     def run(self):
         while True:
@@ -78,15 +83,18 @@ class Game:
                 not abs(player.last_position[1]) + player.size[1] / 2 >= window.game_size[1] / 2):
                 speaker.play("paddle_hit_wall")
 
+        # we know they're the same size
+        paddle_mass = self.player1.size[0] * self.player1.size[1]
+
         rotation_effect = math.radians(JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_ROTATION_DEGREES / 2)
         p1_effect = self.get_player_rotation_effect(self.player1)
         p2_effect = self.get_player_rotation_effect(self.player2)
-        target_camera_rotation_rads = (p1_effect - p2_effect) * rotation_effect
+        target_camera_rotation_rads = (p1_effect - p2_effect) * rotation_effect * paddle_mass
         window.camera_rotation_rads = lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_LERP_SPEED)
 
         screen_movement_effect = p1_effect + p2_effect 
         target_camera_vertical_position = 0
-        if abs(screen_movement_effect) == 2: target_camera_vertical_position = (screen_movement_effect / 2) * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_VERTICAL
+        if abs(screen_movement_effect) == 2: target_camera_vertical_position = (screen_movement_effect / 2) * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_VERTICAL * paddle_mass
 
         self.board_ball_knock[0] = lerp(self.board_ball_knock[0], 0, clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_RETURN_LERP_SPEED)
         self.board_ball_knock[1] = lerp(self.board_ball_knock[1], 0, clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_RETURN_LERP_SPEED)
@@ -116,6 +124,8 @@ class Game:
                     quit()
                 if event.key == pygame.K_F11:
                     window.toggle_fullscreen()
+                if event.key == pygame.K_r:
+                    self.reset_ball()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if (self.time_since_last_click_seconds < 0.2):
@@ -125,17 +135,18 @@ class Game:
 
     def ball_collision_delegate(self, other, resolution_direction):
         # Ugly code. I'm sorry LSP
+        ball_mass = self.ball.size ** 2
 
         # collided with horizontal wall
         if other is None:
             speaker.play("ball_hit_wall")
-            self.board_ball_knock[1] = self.get_screen_knock_power()[1] * resolution_direction[1]
+            self.board_ball_knock[1] = self.get_screen_knock_power()[1] * resolution_direction[1] * ball_mass 
 
         # collided with paddle
         elif isinstance(other, Player):
             speaker.play("ball_hit_paddle")
             other.knock_back(-resolution_direction[0] * JUICE_PADDLE_KNOCKBACK)
-            self.board_ball_knock[0] = self.get_screen_knock_power()[0] * resolution_direction[0]
+            self.board_ball_knock[0] = self.get_screen_knock_power()[0] * resolution_direction[0] * ball_mass
         
     def get_screen_knock_power(self):
         return (lerp(JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MIN_X, JUICE_SCREEN_MOVEMENT_FROM_BALL_KNOCK_MAX_X, abs(self.ball.velocity[0]) / JUICE_SCREEN_MOVEMENT_FROM_BALL_SPEED_FOR_KNOCK_MAX_X),
