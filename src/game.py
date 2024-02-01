@@ -19,7 +19,10 @@ class Game:
     def __init__(self):
         self.ball = Ball()
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
+        # self.player1 = Player(AI_Input(self.ball, window.window_size), position=(-6, 0), size=(0.25, 1.5))
         self.player2 = Player(AI_Input(self.ball, window.window_size), position=(6, 0), size=(0.25, 1.5))
+        # self.player1.player_input.paddle = self.player1
+        self.player2.player_input.paddle = self.player2
 
         self.scores = [0, 0]
         self.last_ball_start_side = 1 
@@ -31,8 +34,7 @@ class Game:
         self.ball_size_index = random.randint(0, len(GAME_BALL_SIZES) - 1)
         self.paddle_size_index = random.randint(0, len(GAME_PADDLE_SIZES) - 1)
 
-        self.ball.velocity = [0, 0]
-        self.ball.position = [0, 0]
+        self.ball.reset()
 
         self.last_ball_start_side = -self.last_ball_start_side
         self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2

@@ -13,6 +13,12 @@ class Ball:
         self.size = size
         self.time_alive = 0
         self.on_collision_delegate = None   # (self, other, resolution_direction)
+        self.reset()
+
+    def reset(self):
+        self.position = [0, 0]
+        self.velocity = [0, 0]
+        self.time_alive = 0
 
     def update(self, paddle_rects):
         self.time_alive += clock.dt_seconds

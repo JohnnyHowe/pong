@@ -8,6 +8,14 @@ class AI_Input(IPlayerInput):
     def __init__(self, ball, window_size):
         self.ball = ball
         self.window_size = window_size
+        self.paddle = None
 
     def get_movement(self):
-        return math.sin(clock.time_running_seconds * 10)
+        threshold = 0.1
+        d_y = self.ball.position[1] - self.paddle.position[1]
+
+        if d_y < -threshold:
+            return -1
+        elif d_y > threshold:
+            return 1
+        return 0
