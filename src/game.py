@@ -25,7 +25,10 @@ class Game:
         self.time_since_last_click_seconds = 1
 
     def reset_ball(self):
-        self.ball = Ball(random.choice(GAME_BALL_SIZES))
+        self.ball_size_index = random.randint(0, len(GAME_BALL_SIZES) - 1)
+        self.paddle_size_index = random.randint(0, len(GAME_PADDLE_SIZES) - 1)
+
+        self.ball = Ball(GAME_BALL_SIZES[self.ball_size_index][0])
         self.ball.on_collision_delegate = self.ball_collision_delegate
         self.ball.velocity = [0, 0]
 
@@ -33,9 +36,10 @@ class Game:
         self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2
         self.ball_held_time_left = GAME_BALL_HOLD_TIME
 
-        paddle_size = random.choice(GAME_PADDLE_SIZES)
+        paddle_size = GAME_PADDLE_SIZES[self.paddle_size_index] 
         self.player1.size = paddle_size
         self.player2.size = paddle_size
+        self.rally_time = 0
 
     def run(self):
         while True:
@@ -44,6 +48,7 @@ class Game:
 
     def step(self):
         self.run_event_loop()
+        self.rally_time += clock.dt_seconds
 
         self.player1.update()
         self.player2.update()
@@ -68,6 +73,12 @@ class Game:
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 1)
         window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 1)
+
+        text_color_t = east_in_then_out(self.rally_time / 2, ease_out_cubic, ease_out_cubic, hold=0.5)
+        info_text_brightness = lerp(0, 255, text_color_t)
+        info_text_color = (info_text_brightness, ) * 3
+        window.draw_text(GAME_PADDLE_SIZES[self.paddle_size_index][2] + " Paddles", (0, 3.5), info_text_color, .5)
+        window.draw_text(GAME_BALL_SIZES[self.ball_size_index][1] + " Ball", (0, 2.5), info_text_color, .5)
 
         self.player1.draw()
         self.player2.draw()
