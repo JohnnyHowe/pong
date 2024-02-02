@@ -2,7 +2,7 @@ import math
 import random
 import pygame
 
-from .ai_input import AI_Input
+from .smart_ai_input import Smart_AI_Input
 from .game_configuration import *
 from .keyboard_player_input import KeyboardPlayerInput
 from .clock import clock
@@ -19,9 +19,10 @@ class Game:
     def __init__(self):
         self.ball = Ball()
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
-        # self.player1 = Player(AI_Input(self.ball, window.window_size), position=(-6, 0), size=(0.25, 1.5))
-        self.player2 = Player(AI_Input(self.ball, window.window_size), position=(6, 0), size=(0.25, 1.5))
+        # self.player1 = Player(Smart_AI_Input(self.ball, window.game_size), position=(-6, 0), size=(0.25, 1.5))
         # self.player1.player_input.paddle = self.player1
+
+        self.player2 = Player(Smart_AI_Input(self.ball, window.game_size), position=(6, 0), size=(0.25, 1.5))
         self.player2.player_input.paddle = self.player2
 
         self.scores = [0, 0]
@@ -35,6 +36,7 @@ class Game:
         self.paddle_size_index = random.randint(0, len(GAME_PADDLE_SIZES) - 1)
 
         self.ball.reset()
+        self.ball.size = GAME_BALL_SIZES[self.ball_size_index][0]
 
         self.last_ball_start_side = -self.last_ball_start_side
         self.ball_held_by = self.player1 if self.last_ball_start_side == -1 else self.player2
@@ -54,7 +56,6 @@ class Game:
         self.run_event_loop()
         self.rally_time += clock.dt_seconds
 
-        self.player1.update()
         self.player2.update()
         self.ball.update([self.player1, self.player2])
 
@@ -90,6 +91,7 @@ class Game:
         
         self.step_juice()
 
+        self.player1.update()
         window.update()
 
     def step_juice(self):
