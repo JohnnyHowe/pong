@@ -18,6 +18,7 @@ class Game:
 
     def __init__(self):
         self.ball = Ball()
+        self.ball.on_collision_delegate = self.ball_collision_delegate
         self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
         # self.player1 = Player(Smart_AI_Input(self.ball, window.game_size), position=(-6, 0), size=(0.25, 1.5))
         # self.player1.player_input.paddle = self.player1
@@ -56,6 +57,7 @@ class Game:
         self.run_event_loop()
         self.rally_time += clock.dt_seconds
 
+        self.player1.update()
         self.player2.update()
         self.ball.update([self.player1, self.player2])
 
@@ -91,7 +93,6 @@ class Game:
         
         self.step_juice()
 
-        self.player1.update()
         window.update()
 
     def step_juice(self):

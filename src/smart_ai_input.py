@@ -2,9 +2,6 @@ import math
 
 from .i_player_input import IPlayerInput
 from .clock import clock
-from.window import window
-
-
 class Smart_AI_Input(IPlayerInput):
     def __init__(self, ball, game_size):
         self.ball = ball
@@ -14,6 +11,7 @@ class Smart_AI_Input(IPlayerInput):
     def get_movement(self):
         threshold = 0.1
         d_y = self.get_target_position() - self.paddle.position[1]
+
         if d_y < -threshold:
             return -1
         elif d_y > threshold:
@@ -23,13 +21,21 @@ class Smart_AI_Input(IPlayerInput):
     def get_target_position(self):
         side_ball_is_on = -1 if self.ball.position[0] < self.paddle.position[0] else 1
         ball_heading_to_self = self.ball.velocity[0] * side_ball_is_on < 0
-        if not ball_heading_to_self: return 0
-        return self.get_projected_ball_intersection_with_self_x()
 
-    def get_projected_ball_intersection_with_self_x(self):
-        side_ball_is_on = -1 if self.ball.position[0] < self.paddle.position[0] else 1
-        target_x = self.paddle.position[0] + (self.ball.size + self.paddle.size[0]) / 2 * side_ball_is_on
+        if ball_heading_to_self:
+            # heading for self
+            return self.get_projected_ball_intersection_with_x(self.paddle.position[0] + self.ball.size * side_ball_is_on / 2)
+
+        # heading away from self
+        play_area_length = (self.paddle.position[0] - self.paddle.size[0] / 2) * 2
+        return self.get_projected_ball_intersection_with_x(self.paddle.position[0] + self.ball.size * side_ball_is_on / 2 + play_area_length * 2 * side_ball_is_on)
+
+    def get_projected_ball_intersection_with_x(self, target_edge_x):
+        side_ball_is_on = -1 if self.ball.position[0] < target_edge_x else 1
+        target_x = target_edge_x + self.ball.size / 2 * side_ball_is_on
+
         raw_intersection = get_intersection(self.ball.position, self.ball.velocity, (target_x, 0), [0, 1])
+        if (raw_intersection is None): return self.ball.position[1]
 
         max_y = (self.game_size[1] - self.ball.size) / 2
         normalized_raw_intersection_y = raw_intersection[1] / max_y

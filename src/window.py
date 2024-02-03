@@ -63,6 +63,9 @@ class _Window:
     # Client draw methods
     # =============================================================================================
 
+    def draw_square(self, center_position, size, color, rotation_rads=0):
+        self.draw_rect((center_position[0] - size / 2, center_position[1] + size / 2, size, size), color, rotation_rads)
+
     def draw_rect(self, world_rect, color, rotation_rads=0):
         points = [(world_rect[0], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1] - world_rect[3]), (world_rect[0], world_rect[1] - world_rect[3])]
         center = (world_rect[0] + world_rect[2] / 2, world_rect[1] - world_rect[3] / 2)
