@@ -1,14 +1,16 @@
 import math
 import random
 
-from .window import window
 from .clock import clock
 from .game_configuration import * 
+from .easings import *
+from .window import window
 
 class Ball:
 
     def __init__(self, size=0.4):
         self.position = [0, 0]
+        self.last_position = [0, 0]
         self.velocity = [4, 4]
         self.size = size
         self.time_alive = 0
@@ -23,6 +25,7 @@ class Ball:
     def update(self, paddle_rects):
         self.time_alive += clock.dt_seconds
 
+        self.last_position = list(self.position)
         self.position[0] += self.velocity[0] * clock.dt_seconds
         self.position[1] += self.velocity[1] * clock.dt_seconds
 
@@ -31,6 +34,7 @@ class Ball:
 
         self.clamp_velocity_proportion()
         self.set_speed()
+
 
     def clamp_velocity_proportion(self):
         """ Stop the vertical speed/ horizontal speed proportion getting out of hand. """
@@ -59,28 +63,29 @@ class Ball:
     def process_paddle_collision(self, paddle):
         """ Process the potential collision with paddle_rect 
         Is a basic 2d, axis aligned collision detection and resolution """
-        paddle_rect = paddle.get_rect()
-        if not self.is_colliding(paddle_rect): return
 
-        # collision resolution
-        overlap_rect = self.get_overlap_rect(paddle_rect)
-        resolution_direction = (0, 0)
-        if (overlap_rect[2] < overlap_rect[3]):
-            # horizontal overlap resolution
-            is_left_of_paddle = self.position[0] < paddle_rect[0] + paddle_rect[2] / 2
-            resolution_direction = (-1 if is_left_of_paddle else 1, 0)
-            self.position[0] += overlap_rect[2] * resolution_direction[0] 
-            self.velocity[0] = abs(self.velocity[0]) * resolution_direction[0]
-            self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL_VELOCITY 
-        else:
-            # vertical overlap resolution
-            is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
-            resolution_direction = (0, -1 if is_above_paddle else 1)
-            self.position[1] -= overlap_rect[3] * resolution_direction[1] 
-            self.velocity[1] = -abs(self.velocity[1]) * resolution_direction[1] 
+        paddle_side = 1 if paddle.position[0] > 0 else -1
+        inner_paddle_edge_x = paddle.position[0] - paddle.size[0] / 2 * paddle_side
 
-        self.add_random_velocity();
-        self.invoke_collision_delegate(paddle, resolution_direction)
+        outer_edge_x = self.position[0] + self.size / 2 * paddle_side
+        last_outer_edge_x = self.last_position[0] + self.size / 2 * paddle_side
+
+        window.draw_square((inner_paddle_edge_x, paddle.position[1]), 0.1, (255, 0, 0))
+        window.draw_square((outer_edge_x, paddle.position[1]), 0.1, (0, 255, 0))
+        window.draw_square((last_outer_edge_x, paddle.position[1]), 0.1, (0, 0, 255))
+
+        if not is_between(inner_paddle_edge_x, outer_edge_x, last_outer_edge_x): return
+
+        # 0 when just touching, 1 when in as far as possible in one frame
+        collision_t = inverse_lerp(outer_edge_x, last_outer_edge_x, inner_paddle_edge_x)
+        collision_point = lerp_position(self.position, self.last_position, collision_t)
+
+        # is colliding on vertical axis at collision point
+        if not (collision_point[1] + self.size / 2 > paddle.position[1] - paddle.size[1] / 2 and collision_point[1] - self.size / 2 < paddle.position[1] + paddle.size[1] / 2): return
+
+        self.position = list(collision_point)
+        self.last_position = list(collision_point)
+        self.velocity[0] = abs(self.velocity[0]) * -paddle_side
 
     def process_game_border_collisions(self):
         if (self.position[1] + self.size / 2 > window.game_size[1] / 2):
@@ -133,3 +138,7 @@ class Ball:
     def is_off_screen_horizontal(self):
         max_x = window.game_size[0] / 2 - self.size / 2
         return abs(self.position[0]) > max_x 
+
+def is_between(value, boundary1, boundary2):
+    """ exclusive """
+    return value > min(boundary1, boundary2) and value < max(boundary1, boundary2)

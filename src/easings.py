@@ -4,6 +4,12 @@ import math
 def lerp(a, b, t):
     return clamp(a + (b - a) * t, min(a, b), max(a, b))
 
+def lerp_position(a, b, t):
+    return (lerp(a[0], b[0], t), lerp(a[1], b[1], t))
+
+def inverse_lerp(a, b, value):
+    return clamp01((value - a) / (b - a))
+
 def ease_in_cubic(x):
     return clamp01(x) ** 3
 
