@@ -61,9 +61,21 @@ class Ball:
             self.process_paddle_collision(paddle)
 
     def process_paddle_collision(self, paddle):
-        """ Process the potential collision with paddle_rect 
-        Is a basic 2d, axis aligned collision detection and resolution """
+        if not self.process_paddle_horizontal_collision(paddle):
+            self.process_paddle_vertical_collision(paddle)
+    
+    def process_paddle_vertical_collision(self, paddle):
+        """ basic axis aligned collision """
+        paddle_rect = paddle.get_rect()
+        if not self.is_colliding(paddle_rect): return
+        overlap_rect = self.get_overlap_rect(paddle_rect)
 
+        is_above_paddle = self.position[1] > paddle_rect[1] - paddle_rect[3] / 2
+        resolution_direction = (0, -1 if is_above_paddle else 1)
+        self.position[1] -= overlap_rect[3] * resolution_direction[1] 
+        self.velocity[1] = -abs(self.velocity[1]) * resolution_direction[1] 
+
+    def process_paddle_horizontal_collision(self, paddle):
         paddle_side = 1 if paddle.position[0] > 0 else -1
         inner_paddle_edge_x = paddle.position[0] - paddle.size[0] / 2 * paddle_side
 
@@ -74,18 +86,23 @@ class Ball:
         window.draw_square((outer_edge_x, paddle.position[1]), 0.1, (0, 255, 0))
         window.draw_square((last_outer_edge_x, paddle.position[1]), 0.1, (0, 0, 255))
 
-        if not is_between(inner_paddle_edge_x, outer_edge_x, last_outer_edge_x): return
+        if not is_between(inner_paddle_edge_x, outer_edge_x, last_outer_edge_x): return False
 
         # 0 when just touching, 1 when in as far as possible in one frame
         collision_t = inverse_lerp(outer_edge_x, last_outer_edge_x, inner_paddle_edge_x)
         collision_point = lerp_position(self.position, self.last_position, collision_t)
 
         # is colliding on vertical axis at collision point
-        if not (collision_point[1] + self.size / 2 > paddle.position[1] - paddle.size[1] / 2 and collision_point[1] - self.size / 2 < paddle.position[1] + paddle.size[1] / 2): return
+        if not (collision_point[1] + self.size / 2 > paddle.position[1] - paddle.size[1] / 2 and collision_point[1] - self.size / 2 < paddle.position[1] + paddle.size[1] / 2): return False
 
         self.position = list(collision_point)
         self.last_position = list(collision_point)
         self.velocity[0] = abs(self.velocity[0]) * -paddle_side
+        self.velocity[1] += paddle.velocity[1] * GAME_PADDLE_SPEED_EFFECT_ON_BALL_VELOCITY
+
+        self.add_random_velocity();
+        self.invoke_collision_delegate(paddle, (-paddle_side, 0))
+        return True
 
     def process_game_border_collisions(self):
         if (self.position[1] + self.size / 2 > window.game_size[1] / 2):
