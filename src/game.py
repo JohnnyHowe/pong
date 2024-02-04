@@ -16,21 +16,26 @@ class Game:
     # Lots of ugly code in this class
     # Please forgive me
 
-    def __init__(self):
+    def __init__(self, n_players=1):
         self.ball = Ball()
         self.ball.on_collision_delegate = self.ball_collision_delegate
-        self.player1 = Player(KeyboardPlayerInput(pygame.K_w, pygame.K_s), position=(-6, 0), size=(0.25, 1.5))
-        # self.player1 = Player(Smart_AI_Input(self.ball, window.game_size), position=(-6, 0), size=(0.25, 1.5))
-        # self.player1.player_input.paddle = self.player1
 
-        self.player2 = Player(Smart_AI_Input(self.ball, window.game_size), position=(6, 0), size=(0.25, 1.5))
-        self.player2.player_input.paddle = self.player2
+        self.player1 = self.create_player((-6, 0), (0.25, 1.5), pygame.K_w, pygame.K_s, ai=(n_players == 0))
+        self.player2 = self.create_player((6, 0), (0.25, 1.5), pygame.K_UP, pygame.K_DOWN, ai=(n_players == 1))
 
         self.scores = [0, 0]
         self.last_ball_start_side = 1 
         self.reset_game()
         self.board_ball_knock = [0, 0]
         self.time_since_last_click_seconds = 1
+        self.time_running = 0
+
+    def create_player(self, position, size, up_key, down_key, ai=False):
+        player = Player(KeyboardPlayerInput(up_key, down_key), position, size)
+        if ai:
+            player.player_input = Smart_AI_Input(self.ball, window.game_size)
+            player.player_input.paddle = player 
+        return player
 
     def reset_game(self):
         self.ball_size_index = random.randint(0, len(GAME_BALL_SIZES) - 1)
@@ -54,7 +59,7 @@ class Game:
             self.step()
 
     def step(self):
-        self.run_event_loop()
+        self.time_running += clock.dt_seconds
         self.rally_time += clock.dt_seconds
 
         self.player1.update()
@@ -80,6 +85,9 @@ class Game:
 
         window.draw_text(self.scores[0], (-3, -.2), (50, 50, 50), 1)
         window.draw_text(self.scores[1], (3, -.2), (50, 50, 50), 1)
+
+        back_to_menu_text_grey = lerp(0, 255, east_in_then_out(self.time_running / 2, ease_out_cubic, ease_out_cubic, hold=0.5))
+        window.draw_text("Press ESC to go back to menu", (0, -4), (back_to_menu_text_grey,) * 3, 0.2)
 
         text_color_t = east_in_then_out(self.rally_time / 2, ease_out_cubic, ease_out_cubic, hold=0.5)
         info_text_brightness = lerp(0, 255, text_color_t)
@@ -128,28 +136,6 @@ class Game:
             player.get_desired_movement() < 0 and player.get_vertical_position_normalized() == -1):
             effect = -effect
         return effect
-
-    def run_event_loop(self):
-        self.time_since_last_click_seconds += clock.dt_seconds
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit()
-            if event.type == pygame.VIDEORESIZE:
-                window.set_size((event.w, event.h))
-                pass
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    quit()
-                if event.key == pygame.K_F11:
-                    window.toggle_fullscreen()
-                if event.key == pygame.K_r:
-                    self.reset_game()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if (self.time_since_last_click_seconds < 0.2):
-                        window.toggle_fullscreen()
-                    else:
-                        self.time_since_last_click_seconds = 0
 
     def ball_collision_delegate(self, other, resolution_direction):
         # Ugly code. I'm sorry LSP

@@ -67,6 +67,7 @@ class _Window:
         self.draw_rect((center_position[0] - size / 2, center_position[1] + size / 2, size, size), color, rotation_rads)
 
     def draw_rect(self, world_rect, color, rotation_rads=0):
+        if (world_rect[2] == 0 or world_rect[3] == 0): return
         points = [(world_rect[0], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1]), (world_rect[0] + world_rect[2], world_rect[1] - world_rect[3]), (world_rect[0], world_rect[1] - world_rect[3])]
         center = (world_rect[0] + world_rect[2] / 2, world_rect[1] - world_rect[3] / 2)
         self.draw_polygon(self.rotate_points(center, points, rotation_rads), color, 0)
@@ -95,9 +96,10 @@ class _Window:
         else:
             pygame.draw.polygon(self._screen, color, screen_points, int(width * self._get_game_display_scale()))
 
-    def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True):
+    def draw_text(self, text, position, color=(255, 255, 255), size=1, center_aligned=True, rotation_rads=0):
         my_font = pygame.font.Font("assets/FFFFORWA.TTF", int(size * self._get_game_display_scale()))
         text_surface = my_font.render(str(text), GAME_ANTIALIASING, color)
+        if (rotation_rads != 0): text_surface = pygame.transform.rotate(text_surface, math.degrees(rotation_rads))
         text_surface = pygame.transform.rotate(text_surface, math.degrees(self.camera_rotation_rads))
 
         draw_position = self.get_screen_position(position)

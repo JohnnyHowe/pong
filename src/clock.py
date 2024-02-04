@@ -17,8 +17,9 @@ class _Clock:
 
     def tick(self):
         time_now = time.time()
-        self.dt_seconds = time_now - self._last_frame_time
-        if (self.dt_seconds == 0): self.dt_seconds = 1.0 / self.min_fps
+
+        new_dt_seconds = time_now - self._last_frame_time
+        if (new_dt_seconds != 0): self.dt_seconds = new_dt_seconds 
         self.dt_seconds = min(self.dt_seconds, 1.0 / self.min_fps)
 
         self.time_running_seconds += self.dt_seconds
