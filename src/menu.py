@@ -14,7 +14,7 @@ class Menu:
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0), size=(0.3, 1.5))
         self.player1.speed = 12
         self.player2.speed = 12
-        self.players_selected = 0
+        self.players_selected = -1
         self.time_player_selected = 0
         self.select_time_to_start_game = 1
 
@@ -27,15 +27,16 @@ class Menu:
         window.camera_rotation_rads = lerp(window.camera_rotation_rads, 0, clock.dt_seconds * 4)
         window.camera_position = lerp_position(window.camera_position, (0, 0), clock.dt_seconds * 4)
 
+        self.time_player_selected += clock.dt_seconds
         position_threshold = 2
         if (self.player1.position[1] > position_threshold and self.players_selected != 1): 
             self.players_selected = 1
         elif (self.player1.position[1] < -position_threshold and self.players_selected != 2): 
             self.players_selected = 2
-
-        self.time_player_selected += clock.dt_seconds
-        if abs(self.player1.position[1]) < position_threshold: 
+        elif (self.player2.position[1] < -position_threshold and self.players_selected != 2): 
             self.players_selected = 0
+        elif abs(self.player1.position[1]) < position_threshold: 
+            self.players_selected = -1
             self.time_player_selected = 0
 
         self.draw()
@@ -50,9 +51,12 @@ class Menu:
         window.draw_rect((-5.65, 3.1, lerp(0, 4.5, p1_rect_t), 1), color=(150, 150, 150))
         p2_rect_t = clamp01(self.time_player_selected / self.select_time_to_start_game) if self.players_selected == 2 else 0
         window.draw_rect((-5.65, -2.2, lerp(0, 4, p2_rect_t), 1), color=(150, 150, 150))
+        p3_rect_t = clamp01(self.time_player_selected / self.select_time_to_start_game) if self.players_selected == 0 else 0
+        window.draw_rect((.8, -2.1, lerp(0, 4.9, p3_rect_t), 1), color=(150, 150, 150))
 
         window.draw_text("Single Player", (-5.5, 3), size=0.5, color=(255, 255, 255) if self.players_selected == 1 else (150, 150, 150), center_aligned=False)
-        window.draw_text("Two Player", (-5.5, -2.3), size=0.5, color=(255, 255, 255) if self.players_selected == 2 else (150, 150, 150), center_aligned=False)
+        window.draw_text("Two Players", (-5.5, -2.3), size=0.5, color=(255, 255, 255) if self.players_selected == 2 else (150, 150, 150), center_aligned=False)
+        if (self.players_selected == 0): window.draw_text("Zero Players?", (1, -2.3), size=0.5, color=(255, 255, 255), center_aligned=False)
 
         key_off_color = (150, 150, 150)
         p1_moving_up = self.player1.player_input.get_movement() > 0.5

@@ -20,8 +20,8 @@ class Game:
         self.ball = Ball()
         self.ball.on_collision_delegate = self.ball_collision_delegate
 
-        self.player1 = self.create_player((-6, 0), (0.25, 1.5), pygame.K_w, pygame.K_s, ai=(n_players == 0))
-        self.player2 = self.create_player((6, 0), (0.25, 1.5), pygame.K_UP, pygame.K_DOWN, ai=(n_players == 1))
+        self.player1 = self.create_player((-6, 0), (0.25, 1.5), pygame.K_w, pygame.K_s, ai=(n_players <= 0))
+        self.player2 = self.create_player((6, 0), (0.25, 1.5), pygame.K_UP, pygame.K_DOWN, ai=(n_players <= 1))
 
         self.scores = [0, 0]
         self.last_ball_start_side = 1 
