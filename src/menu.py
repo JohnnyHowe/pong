@@ -14,6 +14,7 @@ class Menu:
         self.player2 = Player(KeyboardPlayerInput(pygame.K_UP, pygame.K_DOWN), position=(6, 0), size=(0.3, 1.5))
         self.player1.speed = 12
         self.player2.speed = 12
+        # vars used for selection
         self.p1_selection = 0
         self.p2_selection = 0
         self.time_player_1_selected = 0
@@ -22,25 +23,33 @@ class Menu:
 
     def step(self):
         self.player1.update()
-        self.player1.position[1] -= clock.dt_seconds * self.player1.position[1] * 4.5
         self.player2.update()
+
+        # pull players back to center
+        self.player1.position[1] -= clock.dt_seconds * self.player1.position[1] * 4.5
         self.player2.position[1] -= clock.dt_seconds * self.player2.position[1] * 4.5
 
+        self.update_selection_properties()
+
+        # lerp camera back to center: TODO enable juice instead
         window.camera_rotation_rads = lerp(window.camera_rotation_rads, 0, clock.dt_seconds * 4)
         window.camera_position = lerp_position(window.camera_position, (0, 0), clock.dt_seconds * 4)
 
-        self.time_player_1_selected += clock.dt_seconds
-        self.time_player_2_selected += clock.dt_seconds
+        self.draw()
+
+    def update_selection_properties(self):
         position_threshold = 2
         if (self.player1.position[1] > position_threshold): self.p1_selection = 1
         elif (self.player1.position[1] < -position_threshold): self.p1_selection = -1
         if (self.player2.position[1] > position_threshold): self.p2_selection = 1
         elif (self.player2.position[1] < -position_threshold): self.p2_selection = -1
 
+        self.time_player_1_selected += clock.dt_seconds
         if abs(self.player1.position[1]) < position_threshold:
             self.p1_selection = 0
             self.time_player_1_selected = 0
 
+        self.time_player_2_selected += clock.dt_seconds
         if abs(self.player2.position[1]) < position_threshold:
             self.p2_selection = 0
             self.time_player_2_selected = 0
@@ -48,8 +57,6 @@ class Menu:
         # stop timer increasing when other side is selectedss
         if (self.time_player_1_selected > self.time_player_2_selected): self.time_player_2_selected = 0
         if (self.time_player_2_selected > self.time_player_1_selected): self.time_player_1_selected = 0
-
-        self.draw()
 
     def draw(self):
         window.fill_undefined_area((50, 50, 50))
