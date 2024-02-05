@@ -29,7 +29,9 @@ class App:
 
     def start_game(self):
         self.game_running = True
-        self.game = Game(self.menu.get_number_of_players())
+        n_players = self.menu.get_number_of_players()
+        if n_players == -1: quit()
+        self.game = Game(n_players)
         self.menu = Menu()
 
     def run_event_loop(self):
