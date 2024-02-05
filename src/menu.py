@@ -7,6 +7,8 @@ from .keyboard_player_input import KeyboardPlayerInput
 from .player import Player
 from .clock import clock
 from .window import window
+from .speaker import speaker
+from .game_configuration import *
 
 class Menu:
     def __init__(self):
@@ -25,6 +27,8 @@ class Menu:
         self.hint_brightness_lerp_speed = 4
         self.hint_brightness_last = 0
 
+        self.board_ball_knock = [0, 0]
+
     def step(self):
         self.player1.update()
         self.player2.update()
@@ -36,10 +40,45 @@ class Menu:
         self.update_selection_properties()
 
         # lerp camera back to center: TODO enable juice instead
-        window.camera_rotation_rads = lerp(window.camera_rotation_rads, 0, clock.dt_seconds * 4)
-        window.camera_position = lerp_position(window.camera_position, (0, 0), clock.dt_seconds * 4)
+        # window.camera_rotation_rads = lerp(window.camera_rotation_rads, 0, clock.dt_seconds * 4)
+        # window.camera_position = lerp_position(window.camera_position, (0, 0), clock.dt_seconds * 4)
+        self.step_juice()
 
         self.draw()
+
+    def step_juice(self):
+        # copied and pasted from game.py - should refactor somewhere else
+
+        for player in [self.player1, self.player2]:
+            if (abs(player.position[1]) + player.size[1] / 2 >= window.game_size[1] / 2 and
+                not abs(player.last_position[1]) + player.size[1] / 2 >= window.game_size[1] / 2):
+                speaker.play("paddle_hit_wall")
+
+        # we know they're the same size
+        paddle_mass = self.player1.size[0] * self.player1.size[1]
+
+        rotation_effect = math.radians(JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_ROTATION_DEGREES)
+        p1_effect = self.get_player_rotation_effect(self.player1)
+        p2_effect = self.get_player_rotation_effect(self.player2)
+        target_camera_rotation_rads = (p1_effect - p2_effect) * rotation_effect * paddle_mass
+        window.camera_rotation_rads = lerp(window.camera_rotation_rads, target_camera_rotation_rads, clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_LERP_SPEED)
+
+        screen_movement_effect = p1_effect + p2_effect 
+        target_camera_vertical_position = 0
+        if abs(screen_movement_effect) == 2: target_camera_vertical_position = (screen_movement_effect / 2) * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_MAX_VERTICAL * paddle_mass * 2
+
+        target_camera_vertical_position += self.board_ball_knock[1]
+        target_camera_position = (self.board_ball_knock[0], target_camera_vertical_position)
+        window.camera_position = (lerp(window.camera_position[0], target_camera_position[0], clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_LERP_SPEED),
+                                  lerp(window.camera_position[1], target_camera_position[1], clock.dt_seconds * JUICE_SCREEN_MOVEMENT_FROM_PADDLE_LERP_SPEED))
+
+    def get_player_rotation_effect(self, player):
+        # copied and pasted from game.py - should refactor somewhere else
+        effect = player.player_input.get_movement()
+        if (player.get_desired_movement() > 0 and player.get_vertical_position_normalized() == 1 or 
+            player.get_desired_movement() < 0 and player.get_vertical_position_normalized() == -1):
+            effect = -effect
+        return effect
 
     def update_selection_properties(self):
         position_threshold = 2
