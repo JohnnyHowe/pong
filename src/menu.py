@@ -21,6 +21,10 @@ class Menu:
         self.time_player_2_selected = 0
         self.select_time_to_start_game = 1
 
+        self.has_previously_selected = False
+        self.hint_brightness_lerp_speed = 4
+        self.hint_brightness_last = 0
+
     def step(self):
         self.player1.update()
         self.player2.update()
@@ -58,12 +62,15 @@ class Menu:
         if (self.time_player_1_selected > self.time_player_2_selected): self.time_player_2_selected = 0
         if (self.time_player_2_selected > self.time_player_1_selected): self.time_player_1_selected = 0
 
+        if self.get_number_of_players() != None: self.has_previously_selected = True
+
     def draw(self):
         window.fill_undefined_area((50, 50, 50))
 
         self.player1.draw()
         self.player2.draw()
 
+        # selection rectangles behind text
         p1_rect_t = clamp01(self.time_player_1_selected / self.select_time_to_start_game) if self.get_number_of_players() == 1 else 0
         window.draw_rect((-5.65, 3.1, lerp(0, 4.5, p1_rect_t), 1), color=(150, 150, 150))
         p2_rect_t = clamp01(self.time_player_1_selected / self.select_time_to_start_game) if self.get_number_of_players() == 2 else 0
@@ -73,11 +80,13 @@ class Menu:
         p4_rect_t = clamp01(self.time_player_2_selected / self.select_time_to_start_game) if self.get_number_of_players() == -1 else 0
         window.draw_rect((4, -2.1, lerp(0, 1.6, p4_rect_t), 1), color=(150, 150, 150))
 
+        # selection options
         window.draw_text("Single Player", (-5.5, 3), size=0.5, color=(255, 255, 255) if self.get_number_of_players() == 1 else (150, 150, 150), center_aligned=False)
         window.draw_text("Two Players", (-5.5, -2.3), size=0.5, color=(255, 255, 255) if self.get_number_of_players() == 2 else (150, 150, 150), center_aligned=False)
         window.draw_text("Exit", (4.2, -2.3), size=0.5, color=(255, 255, 255) if self.get_number_of_players() == -1 else (150, 150, 150), center_aligned=False)
         if (self.get_number_of_players() == 0): window.draw_text("Zero Players?", (1, 3), size=0.5, color=(255, 255, 255), center_aligned=False)
 
+        # p1 controls 
         key_off_color = (150, 150, 150)
         p1_moving_up = self.player1.player_input.get_movement() > 0.5
         p1_moving_down = self.player1.player_input.get_movement() < -0.5
@@ -86,13 +95,20 @@ class Menu:
         window.draw_text("^", (-5.5, -.4),    size=0.2, color=(255, 255, 255) if p1_moving_down else key_off_color, center_aligned=False, rotation_rads=math.pi)
         window.draw_text("s", (-5.45, -.2), size=0.2, color=(255, 255, 255) if p1_moving_down else key_off_color, center_aligned=False)
 
+        # p2 controls
         p2_moving_up = self.player2.player_input.get_movement() > 0.5
         p2_moving_down = self.player2.player_input.get_movement() < -0.5
         window.draw_text("up",  (5.15, .5),  size=0.25, color=(255, 255, 255) if p2_moving_up else key_off_color, center_aligned=False)
         window.draw_text("^",   (5.25, .7),    size=0.25, color=(255, 255, 255) if p2_moving_up else key_off_color, center_aligned=False)
         window.draw_text("^",   (5.25, -.4),  size=0.25, color=(255, 255, 255) if p2_moving_down else key_off_color, center_aligned=False, rotation_rads=math.pi)
         window.draw_text("down",(4.7, -.2), size=0.25, color=(255, 255, 255) if p2_moving_down else key_off_color, center_aligned=False)
-        
+
+        # hint brightness
+        hint_brightness_target = lerp(0.2, 1, 0.5 - math.cos(clock.time_running_seconds * 4) / 2) if not self.has_previously_selected else 0.2
+        hint_brightness = lerp(self.hint_brightness_last, hint_brightness_target, clock.dt_seconds * self.hint_brightness_lerp_speed)
+        window.draw_text("Hint: move the paddles to select options", (0, -4), (hint_brightness * 255,) * 3, 0.2)
+        self.hint_brightness_last = hint_brightness
+
         window.update()
 
     def should_start_game(self):
